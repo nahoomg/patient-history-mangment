@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.AdminDashboardController" stylesheets="@styles.css">
+    <!-- Header -->
+    <top>
+        <HBox style="-fx-background-color: #3F51B5; -fx-padding: 15 20;">
+            <Label fx:id="welcomeLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;">
+                <font>
+                    <Font name="System Bold" size="20" />
+                </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Logout" onAction="#handleLogout" 
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+    
+    <!-- Main Content -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-tab-min-height: 40; -fx-tab-max-height: 40;">
+            <!-- Dashboard Tab -->
+            <Tab text="Dashboard">
+                <VBox spacing="20" style="-fx-background-color: #f8f9fa; -fx-padding: 20;">
+                    <HBox spacing="20" alignment="CENTER">
+                        <!-- Patient Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Total Patients" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="totalPatientsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Doctor Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Total Doctors" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="totalDoctorsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Treatment Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Pending Treatments" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="pendingTreatmentsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Charts -->
+                    <HBox spacing="20" VBox.vgrow="ALWAYS">
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Patient Gender Distribution" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <PieChart fx:id="genderDistributionChart" legendVisible="true" labelsVisible="true" VBox.vgrow="ALWAYS" />
+                        </VBox>
+                        
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Treatment Requests by Urgency" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" VBox.vgrow="ALWAYS">
+                                <xAxis>
+                                    <CategoryAxis label="Urgency Level" />
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Number of Requests" />
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </Tab>
+            
+            <!-- Treatment Requests Tab -->
+            <Tab text="Treatment Requests">
+                <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 20;" spacing="20">
+                    <!-- Filter and Actions -->
+                    <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Filter Treatment Requests" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            
+                            <HBox spacing="15" alignment="CENTER_LEFT">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Urgency Level" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <ComboBox fx:id="urgencyFilterComboBox" promptText="Filter by urgency" maxWidth="200"
+                                             style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button text="Refresh" onAction="#handleRefreshTreatments" 
+                                        style="-fx-background-color: #3F51B5; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+                                    <font>
+                                        <Font size="12" />
+                                    </font>
+                                </Button>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Table View -->
+                    <TableView fx:id="treatmentRequestsTable" VBox.vgrow="ALWAYS" 
+                               style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                        <columns>
+                            <TableColumn fx:id="treatmentIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="patientNameColumn" text="Patient Name" prefWidth="150"/>
+                            <TableColumn fx:id="dateRequestedColumn" text="Date Requested" prefWidth="120"/>
+                            <TableColumn fx:id="preferredDateColumn" text="Preferred Date" prefWidth="120"/>
+                            <TableColumn fx:id="urgencyColumn" text="Urgency" prefWidth="100"/>
+                            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                            <TableColumn fx:id="assignedDoctorColumn" text="Assigned Doctor" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                    
+                    <!-- Treatment Details -->
+                    <VBox fx:id="treatmentDetailsPane" spacing="15" 
+                          style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                        <Label text="Treatment Details" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                            <font>
+                                <Font name="System Bold" size="18" />
+                            </font>
+                        </Label>
+                        
+                        <Separator style="-fx-opacity: 0.3;" />
+                        
+                        <GridPane hgap="20" vgap="15">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="120" prefWidth="150" />
+                                <ColumnConstraints minWidth="200" prefWidth="400" hgrow="ALWAYS" />
+                            </columnConstraints>
+                            
+                            <!-- Patient -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label text="Patient" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                <Label fx:id="selectedPatientLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                            </VBox>
+                            
+                            <!-- Symptoms -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                                <Label text="Symptoms" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <TextArea fx:id="symptomsTextArea" editable="false" wrapText="true" prefHeight="100"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            
+                            <!-- Assign Doctor -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                <Label text="Assign Doctor" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <ComboBox fx:id="doctorAssignmentComboBox" maxWidth="Infinity"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            
+                            <!-- Status -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                                <Label text="Status" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <ComboBox fx:id="statusComboBox" maxWidth="Infinity"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        </GridPane>
+                        
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <Button text="Save Assignment" onAction="#handleSaveAssignment" 
+                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+                                <font>
+                                    <Font name="System Bold" size="12" />
+                                </font>
+                            </Button>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </Tab>
+            
+            <!-- User Management Tab -->
+            <Tab text="User Management">
+                <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 20;">
+                    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-tab-min-width: 150;">
+                        <!-- Doctor Management Sub-Tab -->
+                        <Tab text="Manage Doctors">
+                            <VBox spacing="20">
+                                <!-- Actions Bar -->
+                                <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;">
+                                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                        <Label text="Doctor Management" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                            <font>
+                                                <Font name="System Bold" size="16" />
+                                            </font>
+                                        </Label>
+                                        
+                                        <HBox spacing="15" alignment="CENTER_LEFT">
+                                            <Button text="Add New Doctor" onAction="#handleShowAddDoctorForm" 
+                                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+                                                <font>
+                                                    <Font size="12" />
+                                                </font>
+                                            </Button>
+                                            <Region HBox.hgrow="ALWAYS" />
+                                            <VBox spacing="5">
+                                                <Label text="Search" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                                <HBox spacing="5">
+                                                    <TextField fx:id="doctorSearchField" promptText="Search doctors..." prefWidth="250"
+                                                              style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5 0 0 5; -fx-background-radius: 5 0 0 5;" />
+                                                    <Button text="Search" onAction="#handleDoctorSearch"
+                                                           style="-fx-background-color: #3F51B5; -fx-text-fill: white; -fx-background-radius: 0 5 5 0; -fx-cursor: hand;" />
+                                                </HBox>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
+                                </HBox>
+                                
+                                <!-- Doctors Table -->
+                                <TableView fx:id="doctorsTable" VBox.vgrow="ALWAYS"
+                                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                                    <columns>
+                                        <TableColumn fx:id="doctorIdColumn" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="doctorFirstNameColumn" text="First Name" prefWidth="100"/>
+                                        <TableColumn fx:id="doctorLastNameColumn" text="Last Name" prefWidth="100"/>
+                                        <TableColumn fx:id="doctorSpecializationColumn" text="Specialization" prefWidth="150"/>
+                                        <TableColumn fx:id="doctorContactColumn" text="Contact" prefWidth="120"/>
+                                        <TableColumn fx:id="doctorEmailColumn" text="Email" prefWidth="150"/>
+                                        <TableColumn fx:id="doctorUsernameColumn" text="Username" prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+                        
+                        <!-- Admin Management Sub-Tab -->
+                        <Tab text="Manage Admins">
+                            <VBox spacing="20">
+                                <!-- Actions Bar -->
+                                <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;">
+                                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                        <Label text="Admin Management" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                            <font>
+                                                <Font name="System Bold" size="16" />
+                                            </font>
+                                        </Label>
+                                        
+                                        <HBox spacing="15" alignment="CENTER_LEFT">
+                                            <Button text="Add New Admin" onAction="#handleShowAddAdminForm" 
+                                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+                                                <font>
+                                                    <Font size="12" />
+                                                </font>
+                                            </Button>
+                                        </HBox>
+                                    </VBox>
+                                </HBox>
+                                
+                                <!-- Admins Table -->
+                                <TableView fx:id="adminsTable" VBox.vgrow="ALWAYS"
+                                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                                    <columns>
+                                        <TableColumn fx:id="adminIdColumn" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="adminFullNameColumn" text="Full Name" prefWidth="150"/>
+                                        <TableColumn fx:id="adminEmailColumn" text="Email" prefWidth="200"/>
+                                        <TableColumn fx:id="adminUsernameColumn" text="Username" prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+                        
+                        <!-- Patient Management Sub-Tab -->
+                        <Tab text="Manage Patients">
+                            <VBox spacing="20">
+                                <!-- Actions Bar -->
+                                <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;">
+                                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                        <Label text="Patient Management" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                            <font>
+                                                <Font name="System Bold" size="16" />
+                                            </font>
+                                        </Label>
+                                        
+                                        <HBox spacing="15" alignment="CENTER_LEFT">
+                                            <Region HBox.hgrow="ALWAYS" />
+                                            <VBox spacing="5">
+                                                <Label text="Search" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                                <HBox spacing="5">
+                                                    <TextField fx:id="patientSearchField" promptText="Search patients..." prefWidth="250"
+                                                              style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5 0 0 5; -fx-background-radius: 5 0 0 5;" />
+                                                    <Button text="Search" onAction="#handlePatientSearch"
+                                                           style="-fx-background-color: #3F51B5; -fx-text-fill: white; -fx-background-radius: 0 5 5 0; -fx-cursor: hand;" />
+                                                </HBox>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
+                                </HBox>
+                                
+                                <!-- Patients Table -->
+                                <TableView fx:id="patientsTable" VBox.vgrow="ALWAYS"
+                                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                                    <columns>
+                                        <TableColumn fx:id="patientIdColumn" text="ID" prefWidth="50"/>
+                                        <TableColumn fx:id="patientFirstNameColumn" text="First Name" prefWidth="100"/>
+                                        <TableColumn fx:id="patientLastNameColumn" text="Last Name" prefWidth="100"/>
+                                        <TableColumn fx:id="patientDobColumn" text="Date of Birth" prefWidth="120"/>
+                                        <TableColumn fx:id="patientGenderColumn" text="Gender" prefWidth="80"/>
+                                        <TableColumn fx:id="patientContactColumn" text="Contact" prefWidth="120"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </Tab>
+                    </TabPane>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane> 

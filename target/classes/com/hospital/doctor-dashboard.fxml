@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.DoctorDashboardController" stylesheets="@styles.css">
+    <!-- Header -->
+    <top>
+        <HBox style="-fx-background-color: #2196F3; -fx-padding: 15 20;">
+            <Label fx:id="welcomeLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;">
+                <font>
+                    <Font name="System Bold" size="20" />
+                </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Logout" onAction="#handleLogout" 
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+    
+    <!-- Main Content -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-tab-min-height: 40; -fx-tab-max-height: 40;">
+            <!-- Dashboard Tab -->
+            <Tab text="Dashboard">
+                <VBox spacing="20" style="-fx-background-color: #f8f9fa; -fx-padding: 20;">
+                    <HBox spacing="20" alignment="CENTER">
+                        <!-- Assigned Patients Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Assigned Patients" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="assignedPatientsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Pending Treatments Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Pending Treatments" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="pendingTreatmentsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Completed Treatments Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Completed Treatments" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="completedTreatmentsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Charts -->
+                    <HBox spacing="20" VBox.vgrow="ALWAYS">
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Treatment Status Distribution" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <PieChart fx:id="treatmentStatusChart" legendVisible="true" labelsVisible="true" VBox.vgrow="ALWAYS" />
+                        </VBox>
+                        
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Treatment Requests by Urgency" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" VBox.vgrow="ALWAYS">
+                                <xAxis>
+                                    <CategoryAxis label="Urgency Level" />
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Number of Requests" />
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </Tab>
+            
+            <!-- Assigned Patients Tab -->
+            <Tab text="Assigned Patients">
+                <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 20;" spacing="20">
+                    <!-- Filter and Actions -->
+                    <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Filter Assignments" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            
+                            <HBox spacing="15" alignment="CENTER_LEFT">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <Label text="Status" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <ComboBox fx:id="statusFilterComboBox" promptText="Filter by status" maxWidth="Infinity"
+                                             style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button text="Refresh" onAction="#handleRefreshAssignments" 
+                                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+                                    <font>
+                                        <Font size="12" />
+                                    </font>
+                                </Button>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Table View -->
+                    <TableView fx:id="assignedPatientsTable" VBox.vgrow="ALWAYS" 
+                               style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                        <columns>
+                            <TableColumn fx:id="treatmentIdColumn" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="patientNameColumn" text="Patient Name" prefWidth="150"/>
+                            <TableColumn fx:id="dateRequestedColumn" text="Date Requested" prefWidth="120"/>
+                            <TableColumn fx:id="preferredDateColumn" text="Preferred Date" prefWidth="120"/>
+                            <TableColumn fx:id="urgencyColumn" text="Urgency" prefWidth="100"/>
+                            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    
+                    <!-- Treatment Details -->
+                    <VBox fx:id="treatmentDetailsPane" spacing="15" 
+                          style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                        <Label text="Treatment Details" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                            <font>
+                                <Font name="System Bold" size="18" />
+                            </font>
+                        </Label>
+                        
+                        <Separator style="-fx-opacity: 0.3;" />
+                        
+                        <GridPane hgap="20" vgap="15">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="100" prefWidth="120" />
+                                <ColumnConstraints minWidth="200" prefWidth="400" hgrow="ALWAYS" />
+                            </columnConstraints>
+                            
+                            <!-- Patient -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label text="Patient" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                <Label fx:id="selectedPatientLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                            </VBox>
+                            
+                            <!-- Symptoms -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.valignment="TOP">
+                                <Label text="Symptoms" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <TextArea fx:id="symptomsTextArea" editable="false" wrapText="true" prefHeight="100"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            
+                            <!-- Status -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                <Label text="Status" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <ComboBox fx:id="treatmentStatusComboBox" maxWidth="200"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            
+                            <!-- Notes -->
+                            <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                                <Label text="Notes" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                            </VBox>
+                            <TextArea fx:id="treatmentNotesArea" wrapText="true" prefHeight="100"
+                                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                      GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        </GridPane>
+                        
+                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <Button text="Update Treatment" onAction="#handleUpdateTreatment" 
+                                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+                                <font>
+                                    <Font name="System Bold" size="12" />
+                                </font>
+                            </Button>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </Tab>
+            
+            <!-- Profile Tab -->
+            <Tab text="Profile">
+                <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 20;" spacing="20">
+                    <HBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                        <VBox spacing="20" style="-fx-padding: 25;" HBox.hgrow="ALWAYS">
+                            <Label text="Doctor Profile" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="22" />
+                                </font>
+                            </Label>
+                            
+                            <Separator style="-fx-opacity: 0.3;" />
+                            
+                            <GridPane hgap="30" vgap="20">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="150" prefWidth="200" />
+                                    <ColumnConstraints minWidth="250" prefWidth="350" />
+                                </columnConstraints>
+                                
+                                <!-- First Name -->
+                                <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <Label text="First Name" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="firstNameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                                
+                                <!-- Last Name -->
+                                <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <Label text="Last Name" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="lastNameLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                                
+                                <!-- Specialization -->
+                                <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                    <Label text="Specialization" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="specializationLabel" style="-fx-font-size: 16px; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                                
+                                <!-- Contact Number -->
+                                <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <Label text="Contact Number" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="contactNumberLabel" style="-fx-font-size: 16px; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                                
+                                <!-- Email -->
+                                <VBox spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                    <Label text="Email" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="emailLabel" style="-fx-font-size: 16px; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                                
+                                <!-- Username -->
+                                <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <Label text="Username" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <Label fx:id="usernameLabel" style="-fx-font-size: 16px; -fx-text-fill: #2C3E50;" />
+                                </VBox>
+                            </GridPane>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane> 
