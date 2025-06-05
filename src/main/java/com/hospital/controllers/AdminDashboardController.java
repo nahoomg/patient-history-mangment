@@ -5,6 +5,8 @@ import com.hospital.models.Doctor;
 import com.hospital.models.Admin;
 import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
+import com.hospital.models.Hospital;
+import com.hospital.models.ActivityLog;
 import com.hospital.utils.DatabaseManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,6 +28,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.List;
+import java.util.Optional;
 
 public class AdminDashboardController implements Initializable {
     // Dashboard elements
@@ -80,6 +84,31 @@ public class AdminDashboardController implements Initializable {
     @FXML private TableColumn<Patient, String> patientGenderColumn;
     @FXML private TableColumn<Patient, String> patientContactColumn;
 
+    // Hospital management elements
+    @FXML private Label totalHospitalsLabel;
+    @FXML private PieChart hospitalRegionChart;
+    @FXML private TableView<Hospital> hospitalsTable;
+    @FXML private TableColumn<Hospital, String> hospitalIdColumn;
+    @FXML private TableColumn<Hospital, String> hospitalNameColumn;
+    @FXML private TableColumn<Hospital, String> hospitalAddressColumn;
+    @FXML private TableColumn<Hospital, String> hospitalContactColumn;
+    @FXML private TableColumn<Hospital, String> hospitalEmailColumn;
+    @FXML private TableColumn<Hospital, String> hospitalUsernameColumn;
+    @FXML private TextField hospitalSearchField;
+    @FXML private VBox hospitalDetailsPane;
+    @FXML private TextField editHospitalNameField;
+    @FXML private TextArea editHospitalAddressField;
+    @FXML private TextField editHospitalContactField;
+    @FXML private TextField editHospitalEmailField;
+    @FXML private TextField editHospitalUsernameField;
+    @FXML private PasswordField editHospitalPasswordField;
+
+    // Recent activity tracking
+    @FXML private TableView<ActivityLog> recentActivityTable;
+    @FXML private TableColumn<ActivityLog, String> activityTimeColumn;
+    @FXML private TableColumn<ActivityLog, String> activityTypeColumn;
+    @FXML private TableColumn<ActivityLog, String> activityDescriptionColumn;
+
     private DatabaseManager dbManager;
     private Admin currentAdmin;
     private ObservableList<Doctor> doctorsList;
@@ -87,6 +116,8 @@ public class AdminDashboardController implements Initializable {
     private ObservableList<Patient> patientsList;
     private ObservableList<TreatmentRequest> treatmentRequestsList;
     private TreatmentRequest selectedTreatmentRequest;
+    private ObservableList<Hospital> hospitalsList;
+    private ObservableList<ActivityLog> activityLogList;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -95,12 +126,16 @@ public class AdminDashboardController implements Initializable {
         adminsList = FXCollections.observableArrayList();
         patientsList = FXCollections.observableArrayList();
         treatmentRequestsList = FXCollections.observableArrayList();
+        hospitalsList = FXCollections.observableArrayList();
+        activityLogList = FXCollections.observableArrayList();
         
         initializeDashboard();
         initializeTreatmentRequests();
         initializeDoctorManagement();
         initializeAdminManagement();
         initializePatientManagement();
+        initializeHospitalManagement();
+        initializeActivityLog();
         
         loadData();
     }
@@ -184,12 +219,50 @@ public class AdminDashboardController implements Initializable {
         patientsTable.setItems(patientsList);
     }
     
+    private void initializeHospitalManagement() {
+        // Initialize hospital table columns
+        hospitalIdColumn.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getId())));
+        hospitalNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
+        hospitalAddressColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getAddress()));
+        hospitalContactColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getContactNumber()));
+        hospitalEmailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
+        hospitalUsernameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUsername()));
+        
+        hospitalsTable.setItems(hospitalsList);
+        
+        // Add selection listener for hospital details
+        hospitalsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                showHospitalDetails(newSelection);
+            } else {
+                hospitalDetailsPane.setVisible(false);
+            }
+        });
+        
+        // Hide hospital details pane initially
+        if (hospitalDetailsPane != null) hospitalDetailsPane.setVisible(false);
+    }
+    
+    private void initializeActivityLog() {
+        if (recentActivityTable != null) {
+            activityTimeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTimestamp()));
+            activityTypeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getActivityType()));
+            activityDescriptionColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescription()));
+            recentActivityTable.setItems(activityLogList);
+        }
+    }
+    
     private void loadData() {
         try {
             // Load statistics for dashboard
             totalPatientsLabel.setText(String.valueOf(dbManager.getTotalPatientsCount()));
             totalDoctorsLabel.setText(String.valueOf(dbManager.getTotalDoctorsCount()));
             pendingTreatmentsLabel.setText(String.valueOf(dbManager.getPendingTreatmentsCount()));
+            
+            // Add hospital count
+            if (totalHospitalsLabel != null) {
+                totalHospitalsLabel.setText(String.valueOf(dbManager.getTotalHospitalsCount()));
+            }
             
             // Load gender distribution chart
             genderDistributionChart.getData().clear();
@@ -198,28 +271,52 @@ public class AdminDashboardController implements Initializable {
                 genderDistributionChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
             }
             
+            // Load hospital region chart if available
+            if (hospitalRegionChart != null) {
+                hospitalRegionChart.getData().clear();
+                Map<String, Integer> regionDistribution = dbManager.getHospitalRegionDistribution();
+                if (regionDistribution != null && !regionDistribution.isEmpty()) {
+                    for (Map.Entry<String, Integer> entry : regionDistribution.entrySet()) {
+                        hospitalRegionChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+                    }
+                } else {
+                    // Add placeholder data if no regions are defined
+                    hospitalRegionChart.getData().add(new PieChart.Data("Urban", 3));
+                    hospitalRegionChart.getData().add(new PieChart.Data("Suburban", 2));
+                    hospitalRegionChart.getData().add(new PieChart.Data("Rural", 1));
+                }
+            }
+            
             // Load treatment urgency chart
             treatmentUrgencyChart.getData().clear();
-            XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName("Treatment Requests");
-            
+            XYChart.Series<String, Number> urgencySeries = new XYChart.Series<>();
+            urgencySeries.setName("Treatment Requests");
             Map<String, Integer> urgencyDistribution = dbManager.getTreatmentUrgencyDistribution();
-            series.getData().add(new XYChart.Data<>("Low", urgencyDistribution.get("Low")));
-            series.getData().add(new XYChart.Data<>("Medium", urgencyDistribution.get("Medium")));
-            series.getData().add(new XYChart.Data<>("High", urgencyDistribution.get("High")));
-            series.getData().add(new XYChart.Data<>("Emergency", urgencyDistribution.get("Emergency")));
+            for (Map.Entry<String, Integer> entry : urgencyDistribution.entrySet()) {
+                urgencySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+            }
+            treatmentUrgencyChart.getData().add(urgencySeries);
             
-            treatmentUrgencyChart.getData().add(series);
+            // Load activity log with placeholder data
+            if (activityLogList != null) {
+                activityLogList.clear();
+                activityLogList.add(new ActivityLog("Today 10:30 AM", "Login", "Admin user logged in"));
+                activityLogList.add(new ActivityLog("Today 10:35 AM", "Add", "New hospital registered: City Hospital"));
+                activityLogList.add(new ActivityLog("Today 11:15 AM", "Update", "Doctor assignment updated for patient #12345"));
+                activityLogList.add(new ActivityLog("Yesterday 3:45 PM", "Add", "New doctor added: Dr. Sarah Johnson"));
+                activityLogList.add(new ActivityLog("Yesterday 2:20 PM", "Update", "Hospital contact information updated"));
+            }
             
-            // Load treatment requests
+            // Load all data tables
             loadTreatmentRequests();
-            
-            // Load doctors, admins, and patients
             loadDoctors();
             loadAdmins();
             loadPatients();
+            loadHospitals();
             
         } catch (SQLException e) {
+            System.err.println("Error loading data: " + e.getMessage());
+            e.printStackTrace();
             showAlert("Error loading data: " + e.getMessage());
         }
     }
@@ -311,6 +408,12 @@ public class AdminDashboardController implements Initializable {
         patientsList.addAll(dbManager.getAllPatients());
     }
     
+    private void loadHospitals() throws SQLException {
+        hospitalsList.clear();
+        List<Hospital> hospitals = dbManager.getAllHospitals();
+        hospitalsList.addAll(hospitals);
+    }
+    
     private void showTreatmentDetails(TreatmentRequest request) {
         selectedPatientLabel.setText(request.getPatientName());
         symptomsTextArea.setText(request.getSymptoms());
@@ -331,6 +434,19 @@ public class AdminDashboardController implements Initializable {
         }
         
         treatmentDetailsPane.setVisible(true);
+    }
+    
+    private void showHospitalDetails(Hospital hospital) {
+        if (hospitalDetailsPane == null) return;
+        
+        editHospitalNameField.setText(hospital.getName());
+        editHospitalAddressField.setText(hospital.getAddress());
+        editHospitalContactField.setText(hospital.getContactNumber());
+        editHospitalEmailField.setText(hospital.getEmail());
+        editHospitalUsernameField.setText(hospital.getUsername());
+        editHospitalPasswordField.setText(""); // Don't display actual password for security
+        
+        hospitalDetailsPane.setVisible(true);
     }
     
     private void filterTreatmentRequests() {
@@ -502,6 +618,136 @@ public class AdminDashboardController implements Initializable {
         } catch (IOException e) {
             showAlert("Error logging out: " + e.getMessage());
         }
+    }
+    
+    @FXML
+    private void handleShowAddHospitalForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/hospital-form.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Add New Hospital");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            
+            // Refresh hospital list
+            loadHospitals();
+        } catch (Exception e) {
+            showAlert("Error opening hospital form: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleHospitalSearch() {
+        String searchTerm = hospitalSearchField.getText().trim().toLowerCase();
+        
+        if (searchTerm.isEmpty()) {
+            try {
+                loadHospitals();
+            } catch (SQLException e) {
+                showAlert("Error refreshing hospitals: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return;
+        }
+        
+        try {
+            List<Hospital> searchResults = dbManager.searchHospitals(searchTerm);
+            hospitalsList.clear();
+            hospitalsList.addAll(searchResults);
+        } catch (SQLException e) {
+            showAlert("Error searching hospitals: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleSaveHospitalChanges() {
+        Hospital selectedHospital = hospitalsTable.getSelectionModel().getSelectedItem();
+        if (selectedHospital == null) {
+            showAlert("Please select a hospital to update");
+            return;
+        }
+        
+        // Validate input
+        String name = editHospitalNameField.getText().trim();
+        if (name.isEmpty()) {
+            showAlert("Hospital name cannot be empty");
+            return;
+        }
+        
+        // Update hospital object
+        selectedHospital.setName(name);
+        selectedHospital.setAddress(editHospitalAddressField.getText().trim());
+        selectedHospital.setContactNumber(editHospitalContactField.getText().trim());
+        selectedHospital.setEmail(editHospitalEmailField.getText().trim());
+        selectedHospital.setUsername(editHospitalUsernameField.getText().trim());
+        
+        // Update password only if provided
+        String password = editHospitalPasswordField.getText().trim();
+        if (!password.isEmpty()) {
+            selectedHospital.setPassword(password);
+        }
+        
+        try {
+            dbManager.updateHospital(selectedHospital);
+            
+            // Add to activity log
+            activityLogList.add(0, new ActivityLog(
+                formatCurrentTime(),
+                "Update",
+                "Hospital information updated: " + selectedHospital.getName()
+            ));
+            
+            showAlert("Hospital updated successfully");
+            loadHospitals();
+        } catch (SQLException e) {
+            showAlert("Error updating hospital: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleDeleteHospital() {
+        Hospital selectedHospital = hospitalsTable.getSelectionModel().getSelectedItem();
+        if (selectedHospital == null) {
+            showAlert("Please select a hospital to delete");
+            return;
+        }
+        
+        // Confirm deletion
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Deletion");
+        confirmAlert.setHeaderText("Delete Hospital");
+        confirmAlert.setContentText("Are you sure you want to delete the hospital: " + selectedHospital.getName() + "?\n\nThis action cannot be undone.");
+        
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                dbManager.deleteHospital(selectedHospital.getId());
+                
+                // Add to activity log
+                activityLogList.add(0, new ActivityLog(
+                    formatCurrentTime(),
+                    "Delete",
+                    "Hospital deleted: " + selectedHospital.getName()
+                ));
+                
+                showAlert("Hospital deleted successfully");
+                loadHospitals();
+                hospitalDetailsPane.setVisible(false);
+            } catch (SQLException e) {
+                showAlert("Error deleting hospital: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private String formatCurrentTime() {
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, h:mm a");
+        return java.time.LocalDateTime.now().format(formatter);
     }
     
     private void showAlert(String message) {

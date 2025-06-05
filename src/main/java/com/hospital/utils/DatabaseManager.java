@@ -870,4 +870,105 @@ public class DatabaseManager {
         }
         return false;
     }
+
+    public int getTotalHospitalsCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM hospitals";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public Map<String, Integer> getHospitalRegionDistribution() throws SQLException {
+        Map<String, Integer> regionDistribution = new HashMap<>();
+        
+        // This is a simplified version assuming region is extracted from address
+        // In a real system, you might have a separate region field
+        String sql = """
+            SELECT 
+                CASE 
+                    WHEN address LIKE '%urban%' THEN 'Urban'
+                    WHEN address LIKE '%suburban%' THEN 'Suburban'
+                    WHEN address LIKE '%rural%' THEN 'Rural'
+                    ELSE 'Other'
+                END AS region,
+                COUNT(*) as count
+            FROM hospitals
+            GROUP BY region
+        """;
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                String region = rs.getString("region");
+                int count = rs.getInt("count");
+                regionDistribution.put(region, count);
+            }
+        }
+        
+        // Ensure all categories exist even if they have 0 count
+        if (!regionDistribution.containsKey("Urban")) regionDistribution.put("Urban", 0);
+        if (!regionDistribution.containsKey("Suburban")) regionDistribution.put("Suburban", 0);
+        if (!regionDistribution.containsKey("Rural")) regionDistribution.put("Rural", 0);
+        if (!regionDistribution.containsKey("Other")) regionDistribution.put("Other", 0);
+        
+        return regionDistribution;
+    }
+
+    public List<Hospital> searchHospitals(String searchTerm) throws SQLException {
+        List<Hospital> hospitals = new ArrayList<>();
+        String sql = """
+            SELECT * FROM hospitals 
+            WHERE name LIKE ? 
+            OR address LIKE ? 
+            OR contactNumber LIKE ?
+            OR email LIKE ?
+            OR username LIKE ?
+        """;
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + searchTerm + "%";
+            for (int i = 1; i <= 5; i++) {
+                pstmt.setString(i, searchPattern);
+            }
+            
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Hospital hospital = new Hospital(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("address"),
+                    rs.getString("contactNumber"),
+                    rs.getString("email"),
+                    rs.getString("website"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("description")
+                );
+                hospitals.add(hospital);
+            }
+        }
+        
+        return hospitals;
+    }
+
+    public void deleteHospital(int hospitalId) throws SQLException {
+        String sql = "DELETE FROM hospitals WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, hospitalId);
+            pstmt.executeUpdate();
+        }
+    }
 } 
