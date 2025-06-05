@@ -190,18 +190,20 @@ public class PatientRegistrationController implements Initializable {
             Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
             Stage stage = (Stage) firstNameField.getScene().getWindow();
             if (stage != null) {
-                Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+                Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
                 stage.setScene(scene);
                 stage.setTitle("City Hospital Management System");
-                stage.setMaximized(Main.USE_MAXIMIZED);
+                stage.setMaximized(false);
+                stage.centerOnScreen();
                 stage.show();
             } else {
                 System.out.println("Error: Stage is null, manually navigating to login page");
                 Stage newStage = new Stage();
-                Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+                Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
                 newStage.setScene(scene);
                 newStage.setTitle("City Hospital Management System");
-                newStage.setMaximized(Main.USE_MAXIMIZED);
+                newStage.setMaximized(false);
+                newStage.centerOnScreen();
                 newStage.show();
             }
         } catch (IOException e) {

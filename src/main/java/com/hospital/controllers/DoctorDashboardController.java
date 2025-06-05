@@ -304,10 +304,11 @@ public class DoctorDashboardController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
             stage.setScene(scene);
             stage.setTitle("City Hospital Management System - Login");
-            stage.setMaximized(Main.USE_MAXIMIZED);
+            stage.setMaximized(false);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             showAlert("Error logging out: " + e.getMessage());

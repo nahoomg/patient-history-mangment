@@ -22,15 +22,20 @@ public class Main extends Application {
     public static final double DEFAULT_WIDTH = 1280;
     public static final double DEFAULT_HEIGHT = 800;
     public static final boolean USE_MAXIMIZED = true;
+    
+    // Login screen specific dimensions
+    public static final double LOGIN_WIDTH = 800;
+    public static final double LOGIN_HEIGHT = 600;
 
     @Override
     public void start(Stage primaryStage) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
-            Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            Scene scene = new Scene(root, LOGIN_WIDTH, LOGIN_HEIGHT);
             primaryStage.setTitle("City Hospital Management System");
             primaryStage.setScene(scene);
-            primaryStage.setMaximized(USE_MAXIMIZED);
+            primaryStage.setResizable(true);
+            primaryStage.centerOnScreen();
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
