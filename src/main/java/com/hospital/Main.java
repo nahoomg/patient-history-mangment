@@ -28,18 +28,17 @@ public class Main extends Application {
     public static final double LOGIN_HEIGHT = 600;
 
     @Override
-    public void start(Stage primaryStage) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
-            Scene scene = new Scene(root, LOGIN_WIDTH, LOGIN_HEIGHT);
-            primaryStage.setTitle("City Hospital Management System");
-            primaryStage.setScene(scene);
-            primaryStage.setResizable(true);
-            primaryStage.centerOnScreen();
-            primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void start(Stage primaryStage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
+        
+        // Set the scene with the login window size
+        Scene scene = new Scene(root, LOGIN_WIDTH, LOGIN_HEIGHT);
+        
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("City Hospital Management System");
+        primaryStage.setMaximized(false); // Login screen should not be maximized
+        primaryStage.centerOnScreen();
+        primaryStage.show();
     }
 
     private void showLoginScreen(Stage stage) {
@@ -465,6 +464,22 @@ public class Main extends Application {
         addStage.setTitle("Add New Patient");
         addStage.setScene(scene);
         addStage.show();
+    }
+
+    // Method to navigate to registration page
+    public static void openRegistrationPage(Stage stage) {
+        try {
+            Parent root = FXMLLoader.load(Main.class.getResource("/com/hospital/registration-choice.fxml"));
+            Scene scene = new Scene(root, LOGIN_WIDTH, LOGIN_HEIGHT);
+            stage.setScene(scene);
+            stage.setTitle("Registration Options - City Hospital");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            System.out.println("ERROR loading registration page: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

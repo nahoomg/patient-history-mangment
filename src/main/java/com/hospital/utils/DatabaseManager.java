@@ -4,6 +4,7 @@ import com.hospital.models.Doctor;
 import com.hospital.models.Patient;
 import com.hospital.models.Admin;
 import com.hospital.models.TreatmentRequest;
+import com.hospital.models.Hospital;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:hospital.db";
     private static DatabaseManager instance;
 
-    private DatabaseManager() {
+    public DatabaseManager() {
         initializeDatabase();
     }
 
@@ -102,12 +103,28 @@ public class DatabaseManager {
             )
         """;
 
+        // Create hospitals table
+        String createHospitalsTable = """
+            CREATE TABLE IF NOT EXISTS hospitals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                address TEXT,
+                contactNumber TEXT,
+                email TEXT,
+                website TEXT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                description TEXT
+            )
+        """;
+
         try (Statement stmt = conn.createStatement()) {
             // Create tables if they don't exist
             stmt.execute(createAdminsTable);
             stmt.execute(createDoctorsTable);
             stmt.execute(createPatientsTable);
             stmt.execute(createTreatmentRequestsTable);
+            stmt.execute(createHospitalsTable);
             
             // Add default admin account if this is a new database
             if (isNewDatabase) {
@@ -687,5 +704,124 @@ public class DatabaseManager {
         if (!distribution.containsKey("Emergency")) distribution.put("Emergency", 0);
         
         return distribution;
+    }
+
+    // Hospital operations
+    public void addHospital(Hospital hospital) throws SQLException {
+        String sql = "INSERT INTO hospitals (name, address, contactNumber, email, website, username, password, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hospital.getName());
+            pstmt.setString(2, hospital.getAddress());
+            pstmt.setString(3, hospital.getContactNumber());
+            pstmt.setString(4, hospital.getEmail());
+            pstmt.setString(5, hospital.getWebsite());
+            pstmt.setString(6, hospital.getUsername());
+            pstmt.setString(7, hospital.getPassword());
+            pstmt.setString(8, hospital.getDescription());
+            pstmt.executeUpdate();
+        }
+    }
+
+    public Hospital authenticateHospital(String username, String password) throws SQLException {
+        String sql = "SELECT * FROM hospitals WHERE username = ? AND password = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return new Hospital(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("address"),
+                    rs.getString("contactNumber"),
+                    rs.getString("email"),
+                    rs.getString("website"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("description")
+                );
+            }
+        }
+        return null;
+    }
+
+    public List<Hospital> getAllHospitals() throws SQLException {
+        List<Hospital> hospitals = new ArrayList<>();
+        String sql = "SELECT * FROM hospitals";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Hospital hospital = new Hospital(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("address"),
+                    rs.getString("contactNumber"),
+                    rs.getString("email"),
+                    rs.getString("website"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("description")
+                );
+                hospitals.add(hospital);
+            }
+        }
+        return hospitals;
+    }
+
+    public Hospital getHospitalById(int id) throws SQLException {
+        String sql = "SELECT * FROM hospitals WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return new Hospital(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("address"),
+                    rs.getString("contactNumber"),
+                    rs.getString("email"),
+                    rs.getString("website"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("description")
+                );
+            }
+        }
+        return null;
+    }
+
+    public void updateHospital(Hospital hospital) throws SQLException {
+        String sql = "UPDATE hospitals SET name = ?, address = ?, contactNumber = ?, email = ?, website = ?, description = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hospital.getName());
+            pstmt.setString(2, hospital.getAddress());
+            pstmt.setString(3, hospital.getContactNumber());
+            pstmt.setString(4, hospital.getEmail());
+            pstmt.setString(5, hospital.getWebsite());
+            pstmt.setString(6, hospital.getDescription());
+            pstmt.setInt(7, hospital.getId());
+            pstmt.executeUpdate();
+        }
+    }
+
+    public boolean isUsernameExists(String username) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM (SELECT username FROM patients UNION SELECT username FROM doctors UNION SELECT username FROM admins UNION SELECT username FROM hospitals) WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
     }
 } 

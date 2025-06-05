@@ -188,4 +188,139 @@
 .text-field:focused, .text-area:focused, .combo-box:focused {
     -fx-border-color: #3F51B5;
     -fx-effect: dropshadow(three-pass-box, rgba(63,81,181,0.2), 5, 0, 0, 0);
+}
+
+/* Registration Choice Styling */
+.big-button {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.big-button:hover {
+    -fx-background-color: #303F9F;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+}
+
+.hospital-button {
+    -fx-background-color: #2196F3;
+}
+
+.hospital-button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #3F51B5;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+    -fx-underline: false;
+}
+
+.link-button:hover {
+    -fx-text-fill: #303F9F;
+    -fx-underline: true;
+}
+
+/* Hospital Dashboard Styles */
+.top-bar {
+    -fx-background-color: #3F51B5;
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+
+.dashboard-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.user-name {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+}
+
+.logout-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: white;
+    -fx-border-radius: 3;
+    -fx-cursor: hand;
+}
+
+.logout-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar {
+    -fx-background-color: #2C3E50;
+    -fx-min-width: 200px;
+    -fx-spacing: 5;
+}
+
+.sidebar-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 10 0 15 0;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 15;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-min-width: 180px;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.active-sidebar-button {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 0 0 0 3;
+    -fx-border-color: #3F51B5;
+}
+
+.content-area {
+    -fx-background-color: #F5F5F5;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+    -fx-padding: 5 0;
+}
+
+.info-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #7F8C8D;
+}
+
+.info-value {
+    -fx-text-fill: #2C3E50;
+}
+
+.description-area {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5;
+}
+
+.placeholder-text {
+    -fx-font-size: 14px;
+    -fx-fill: #7F8C8D;
+}
+
+.footer {
+    -fx-background-color: #ECF0F1;
+    -fx-border-width: 1 0 0 0;
+    -fx-border-color: #E0E0E0;
 } 

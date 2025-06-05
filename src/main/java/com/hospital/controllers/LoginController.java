@@ -1,10 +1,13 @@
 package com.hospital.controllers;
 
 import com.hospital.Main;
-import com.hospital.models.Doctor;
 import com.hospital.models.Admin;
+import com.hospital.models.Doctor;
+import com.hospital.models.Hospital;
 import com.hospital.models.Patient;
 import com.hospital.utils.DatabaseManager;
+import com.hospital.utils.Session;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,147 +20,122 @@ import java.sql.SQLException;
 public class LoginController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
+    @FXML private ComboBox<String> userTypeComboBox;
     @FXML private Label messageLabel;
 
-    private DatabaseManager dbManager;
+    private final DatabaseManager dbManager = new DatabaseManager();
 
     @FXML
-    public void initialize() {
-        dbManager = DatabaseManager.getInstance();
+    private void initialize() {
+        userTypeComboBox.getItems().addAll("Patient", "Doctor", "Admin", "Hospital");
+        userTypeComboBox.setValue("Patient");
     }
 
     @FXML
-    private void handleLogin() {
+    private void handleLogin(ActionEvent event) {
         String username = usernameField.getText();
         String password = passwordField.getText();
+        String userType = userTypeComboBox.getValue();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showMessage("Please enter username and password", true);
+            messageLabel.setText("Please enter both username and password");
             return;
         }
 
         try {
-            // First try admin login
-            Admin admin = dbManager.authenticateAdmin(username, password);
-            if (admin != null) {
-                openAdminDashboard(admin);
-                return;
+            switch (userType) {
+                case "Patient":
+                    loginAsPatient(username, password);
+                    break;
+                case "Doctor":
+                    loginAsDoctor(username, password);
+                    break;
+                case "Admin":
+                    loginAsAdmin(username, password);
+                    break;
+                case "Hospital":
+                    loginAsHospital(username, password);
+                    break;
             }
-
-            // Then try doctor login
-            Doctor doctor = dbManager.authenticateDoctor(username, password);
-            if (doctor != null) {
-                openDoctorDashboard(doctor);
-                return;
-            }
-
-            // Finally try patient login
-            Patient patient = dbManager.authenticatePatient(username, password);
-            if (patient != null) {
-                openPatientDashboard(patient);
-                return;
-            }
-
-            // If we get here, authentication failed
-            showMessage("Invalid username or password", true);
-            
         } catch (SQLException e) {
-            showMessage("Database error: " + e.getMessage(), true);
+            messageLabel.setText("Database error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loginAsPatient(String username, String password) throws SQLException {
+        Patient patient = dbManager.authenticatePatient(username, password);
+        if (patient != null) {
+            Session.getInstance().setCurrentUser(patient);
+            Session.getInstance().setUserType("patient");
+            navigateToDashboard("/com/hospital/patient-dashboard.fxml", "Patient Dashboard");
+        } else {
+            messageLabel.setText("Invalid patient credentials");
+        }
+    }
+
+    private void loginAsDoctor(String username, String password) throws SQLException {
+        Doctor doctor = dbManager.authenticateDoctor(username, password);
+        if (doctor != null) {
+            Session.getInstance().setCurrentUser(doctor);
+            Session.getInstance().setUserType("doctor");
+            navigateToDashboard("/com/hospital/doctor-dashboard.fxml", "Doctor Dashboard");
+        } else {
+            messageLabel.setText("Invalid doctor credentials");
+        }
+    }
+
+    private void loginAsAdmin(String username, String password) throws SQLException {
+        Admin admin = dbManager.authenticateAdmin(username, password);
+        if (admin != null) {
+            Session.getInstance().setCurrentUser(admin);
+            Session.getInstance().setUserType("admin");
+            navigateToDashboard("/com/hospital/admin-dashboard.fxml", "Admin Dashboard");
+        } else {
+            messageLabel.setText("Invalid admin credentials");
+        }
+    }
+
+    private void loginAsHospital(String username, String password) throws SQLException {
+        Hospital hospital = dbManager.authenticateHospital(username, password);
+        if (hospital != null) {
+            Session.getInstance().setCurrentUser(hospital);
+            Session.getInstance().setUserType("hospital");
+            navigateToDashboard("/com/hospital/hospital-dashboard.fxml", "Hospital Dashboard");
+        } else {
+            messageLabel.setText("Invalid hospital credentials");
+        }
+    }
+
+    private void navigateToDashboard(String fxmlPath, String title) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
+            stage.setTitle(title);
+            stage.setMaximized(Main.USE_MAXIMIZED);
+            stage.show();
+        } catch (IOException e) {
+            messageLabel.setText("Error loading dashboard: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @FXML
-    private void openRegistrationPage() {
+    private void handleRegister() {
         try {
-            // Print debug information
-            System.out.println("Attempting to load patient registration page");
-            String resourcePath = "/com/hospital/patient-registration.fxml";
-            System.out.println("Resource path: " + resourcePath);
-            
-            // Check if resource exists
-            if (getClass().getResource(resourcePath) == null) {
-                System.out.println("ERROR: Resource not found: " + resourcePath);
-                showMessage("Resource not found: " + resourcePath, true);
-                return;
-            }
-            
-            Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
+            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/registration-choice.fxml"));
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
             stage.setScene(scene);
-            stage.setTitle("Patient Registration - City Hospital");
-            stage.setMaximized(Main.USE_MAXIMIZED);
+            stage.setTitle("Registration Options");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
-            System.out.println("ERROR loading registration page: " + e.getMessage());
+            messageLabel.setText("Error loading registration page: " + e.getMessage());
             e.printStackTrace();
-            showMessage("Error opening registration page: " + e.getMessage(), true);
-        } catch (Exception e) {
-            System.out.println("UNEXPECTED ERROR: " + e.getClass().getName() + ": " + e.getMessage());
-            e.printStackTrace();
-            showMessage("Unexpected error: " + e.getMessage(), true);
         }
-    }
-
-    private void openAdminDashboard(Admin admin) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/admin-dashboard.fxml"));
-            Parent root = loader.load();
-            
-            AdminDashboardController controller = loader.getController();
-            controller.setAdmin(admin);
-            
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
-            stage.setScene(scene);
-            stage.setTitle("Admin Dashboard - City Hospital");
-            stage.setMaximized(Main.USE_MAXIMIZED);
-            stage.show();
-        } catch (IOException e) {
-            showMessage("Error loading admin dashboard: " + e.getMessage(), true);
-        }
-    }
-
-    private void openDoctorDashboard(Doctor doctor) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/doctor-dashboard.fxml"));
-            Parent root = loader.load();
-            
-            DoctorDashboardController controller = loader.getController();
-            controller.setDoctor(doctor);
-            
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
-            stage.setScene(scene);
-            stage.setTitle("Doctor Dashboard - City Hospital");
-            stage.setMaximized(Main.USE_MAXIMIZED);
-            stage.show();
-        } catch (IOException e) {
-            showMessage("Error loading doctor dashboard: " + e.getMessage(), true);
-        }
-    }
-
-    private void openPatientDashboard(Patient patient) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/patient-dashboard.fxml"));
-            Parent root = loader.load();
-            
-            PatientDashboardController controller = loader.getController();
-            controller.setPatient(patient);
-            
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
-            stage.setScene(scene);
-            stage.setTitle("Patient Dashboard - City Hospital");
-            stage.setMaximized(Main.USE_MAXIMIZED);
-            stage.show();
-        } catch (IOException e) {
-            showMessage("Error loading patient dashboard: " + e.getMessage(), true);
-        }
-    }
-
-    private void showMessage(String message, boolean isError) {
-        messageLabel.setText(message);
-        messageLabel.setStyle(isError ? "-fx-text-fill: red;" : "-fx-text-fill: green;");
     }
 } 
