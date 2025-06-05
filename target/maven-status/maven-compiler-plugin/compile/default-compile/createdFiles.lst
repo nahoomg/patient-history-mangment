@@ -1,0 +1,15 @@
+com\hospital\controllers\AdminFormController.class
+com\hospital\controllers\AdminDashboardController$1.class
+com\hospital\controllers\DoctorFormController.class
+com\hospital\utils\DatabaseManager.class
+com\hospital\controllers\PatientDashboardController.class
+com\hospital\controllers\AdminDashboardController$2.class
+com\hospital\controllers\LoginController.class
+com\hospital\Main.class
+com\hospital\controllers\PatientRegistrationController.class
+com\hospital\models\Admin.class
+com\hospital\models\TreatmentRequest.class
+com\hospital\controllers\AdminDashboardController.class
+com\hospital\controllers\DoctorDashboardController.class
+com\hospital\models\Patient.class
+com\hospital\models\Doctor.class
