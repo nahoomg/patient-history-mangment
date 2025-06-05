@@ -10,11 +10,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
+import java.util.Optional;
+import javafx.geometry.Insets;
+import javafx.scene.layout.GridPane;
 
 public class PatientDashboardController implements Initializable {
     @FXML private Label welcomeLabel;
@@ -48,15 +52,104 @@ public class PatientDashboardController implements Initializable {
         welcomeLabel.setText("Welcome, " + patient.getFirstName() + " " + patient.getLastName());
         
         // Display patient information
-        firstNameLabel.setText(patient.getFirstName());
-        lastNameLabel.setText(patient.getLastName());
-        dobLabel.setText(patient.getDateOfBirth().toString());
-        genderLabel.setText(patient.getGender());
-        contactLabel.setText(patient.getContactNumber());
-        addressLabel.setText(patient.getAddress());
+        updatePatientInfoDisplay();
         
         // Display medical history
         medicalHistoryArea.setText(patient.getMedicalHistory());
+    }
+    
+    private void updatePatientInfoDisplay() {
+        firstNameLabel.setText(currentPatient.getFirstName());
+        lastNameLabel.setText(currentPatient.getLastName());
+        dobLabel.setText(currentPatient.getDateOfBirth().toString());
+        genderLabel.setText(currentPatient.getGender());
+        contactLabel.setText(currentPatient.getContactNumber());
+        addressLabel.setText(currentPatient.getAddress());
+    }
+
+    @FXML
+    private void handleEditPersonalInfo() {
+        // Create a dialog for editing patient information
+        Dialog<Patient> dialog = new Dialog<>();
+        dialog.setTitle("Edit Personal Information");
+        dialog.setHeaderText("Update your personal information");
+        
+        // Set the button types
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        
+        // Create the form grid
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        
+        // Create fields with current values
+        TextField firstNameField = new TextField(currentPatient.getFirstName());
+        TextField lastNameField = new TextField(currentPatient.getLastName());
+        TextField contactField = new TextField(currentPatient.getContactNumber());
+        TextField addressField = new TextField(currentPatient.getAddress());
+        
+        // Add labels and fields to grid
+        grid.add(new Label("First Name:"), 0, 0);
+        grid.add(firstNameField, 1, 0);
+        grid.add(new Label("Last Name:"), 0, 1);
+        grid.add(lastNameField, 1, 1);
+        grid.add(new Label("Contact Number:"), 0, 2);
+        grid.add(contactField, 1, 2);
+        grid.add(new Label("Address:"), 0, 3);
+        grid.add(addressField, 1, 3);
+        
+        // Set the dialog content
+        dialog.getDialogPane().setContent(grid);
+        
+        // Style the dialog
+        dialog.getDialogPane().setStyle("-fx-background-color: white;");
+        dialog.getDialogPane().getStyleClass().add("modern-dialog");
+        
+        // Request focus on the first field
+        firstNameField.requestFocus();
+        
+        // Convert the result to a patient when the save button is clicked
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                // Update patient object with new values
+                currentPatient.setFirstName(firstNameField.getText());
+                currentPatient.setLastName(lastNameField.getText());
+                currentPatient.setContactNumber(contactField.getText());
+                currentPatient.setAddress(addressField.getText());
+                return currentPatient;
+            }
+            return null;
+        });
+        
+        // Show the dialog and process the result
+        Optional<Patient> result = dialog.showAndWait();
+        result.ifPresent(patient -> {
+            try {
+                // Update the patient in the database
+                dbManager.updatePatient(patient);
+                
+                // Update the UI
+                updatePatientInfoDisplay();
+                welcomeLabel.setText("Welcome, " + patient.getFirstName() + " " + patient.getLastName());
+                
+                // Show success message
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Your personal information has been updated successfully.");
+                alert.showAndWait();
+                
+            } catch (SQLException e) {
+                // Show error message
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Failed to update personal information: " + e.getMessage());
+                alert.showAndWait();
+            }
+        });
     }
 
     @FXML

@@ -379,6 +379,19 @@ public class DatabaseManager {
         }
     }
 
+    public void updatePatient(Patient patient) throws SQLException {
+        String sql = "UPDATE patients SET firstName = ?, lastName = ?, contactNumber = ?, address = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, patient.getFirstName());
+            pstmt.setString(2, patient.getLastName());
+            pstmt.setString(3, patient.getContactNumber());
+            pstmt.setString(4, patient.getAddress());
+            pstmt.setInt(5, patient.getId());
+            pstmt.executeUpdate();
+        }
+    }
+
     public Patient getPatientById(int id) throws SQLException {
         String sql = "SELECT * FROM patients WHERE id = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL);
