@@ -323,4 +323,130 @@
     -fx-background-color: #ECF0F1;
     -fx-border-width: 1 0 0 0;
     -fx-border-color: #E0E0E0;
+}
+
+/* New Hospital Dashboard Styles */
+.chart-container {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-padding: 15;
+}
+
+.chart-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+}
+
+.action-bar {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-padding: 15;
+}
+
+.panel-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+}
+
+.search-field {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5 0 0 5;
+    -fx-background-radius: 5 0 0 5;
+}
+
+.search-button {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+    -fx-background-radius: 0 5 5 0;
+    -fx-cursor: hand;
+}
+
+.add-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-padding: 8 15;
+}
+
+.refresh-button {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-padding: 8 15;
+}
+
+.delete-button {
+    -fx-background-color: #E74C3C;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-padding: 8 15;
+}
+
+.data-table {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.details-pane {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.details-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 13px;
+}
+
+.details-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+}
+
+.details-text-area {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.filter-label {
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 13px;
+}
+
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-padding: 20;
+}
+
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 13px;
+}
+
+.form-field {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.separator {
+    -fx-opacity: 0.3;
 } 

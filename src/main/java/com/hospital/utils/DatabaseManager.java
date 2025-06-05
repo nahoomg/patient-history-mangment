@@ -312,6 +312,42 @@ public class DatabaseManager {
         return null;
     }
 
+    public void updateDoctor(Doctor doctor) throws SQLException {
+        String sql = "UPDATE doctors SET firstName = ?, lastName = ?, specialization = ?, contactNumber = ?, email = ?, username = ?, password = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, doctor.getFirstName());
+            pstmt.setString(2, doctor.getLastName());
+            pstmt.setString(3, doctor.getSpecialization());
+            pstmt.setString(4, doctor.getContactNumber());
+            pstmt.setString(5, doctor.getEmail());
+            pstmt.setString(6, doctor.getUsername());
+            pstmt.setString(7, doctor.getPassword());
+            pstmt.setInt(8, doctor.getId());
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void deleteDoctor(int doctorId) throws SQLException {
+        // First check if the doctor is assigned to any treatment requests
+        String checkSql = "SELECT COUNT(*) FROM treatment_requests WHERE assigned_doctor_id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, doctorId);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                throw new SQLException("Cannot delete doctor: Doctor is assigned to treatment requests. Please reassign the requests first.");
+            }
+            
+            // If no assignments, proceed with deletion
+            String deleteSql = "DELETE FROM doctors WHERE id = ?";
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                deleteStmt.setInt(1, doctorId);
+                deleteStmt.executeUpdate();
+            }
+        }
+    }
+
     // Patient operations
     public void addPatient(Patient patient) throws SQLException {
         String sql = "INSERT INTO patients (firstName, lastName, dateOfBirth, gender, contactNumber, address, medicalHistory, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -808,6 +844,16 @@ public class DatabaseManager {
             pstmt.setString(5, hospital.getWebsite());
             pstmt.setString(6, hospital.getDescription());
             pstmt.setInt(7, hospital.getId());
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void updateHospitalPassword(int hospitalId, String newPassword) throws SQLException {
+        String sql = "UPDATE hospitals SET password = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setInt(2, hospitalId);
             pstmt.executeUpdate();
         }
     }
