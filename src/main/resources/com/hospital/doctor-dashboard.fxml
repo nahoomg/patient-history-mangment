@@ -9,7 +9,7 @@
 <?import javafx.scene.paint.LinearGradient?>
 <?import javafx.scene.paint.Stop?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.DoctorDashboardController">
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.DoctorDashboardController" stylesheets="@styles.css">
     <!-- Header -->
     <top>
         <HBox style="-fx-background-color: #2196F3; -fx-padding: 15 20;">

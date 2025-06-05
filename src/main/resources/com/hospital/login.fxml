@@ -8,7 +8,7 @@
 <?import javafx.scene.paint.LinearGradient?>
 <?import javafx.scene.paint.Stop?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.LoginController" stylesheets="@styles.css">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.LoginController" stylesheets="@styles.css">
     <!-- Background with gradient -->
     <Rectangle width="800" height="600">
         <fill>
@@ -81,4 +81,4 @@
                        style="-fx-text-fill: #3498DB; -fx-font-size: 12px; -fx-border-width: 0;" />
         </HBox>
     </VBox>
-</BorderPane> 
+</StackPane> 
