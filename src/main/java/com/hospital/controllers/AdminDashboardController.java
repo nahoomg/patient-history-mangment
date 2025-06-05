@@ -383,6 +383,23 @@ public class AdminDashboardController implements Initializable {
                     selectedTreatmentRequest.setStatus("Assigned");
                     statusComboBox.setValue("Assigned");
                 }
+                
+                // Update the patient's medical history to reflect the doctor assignment
+                try {
+                    Patient patient = dbManager.getPatientById(selectedTreatmentRequest.getPatientId());
+                    if (patient != null) {
+                        String assignmentNote = "\n--- DOCTOR ASSIGNED ---\n" +
+                                              "Date: " + LocalDate.now() + "\n" +
+                                              "Doctor: " + selectedDoctor.getFirstName() + " " + selectedDoctor.getLastName() + "\n" +
+                                              "Specialization: " + selectedDoctor.getSpecialization() + "\n" +
+                                              "Status: " + selectedTreatmentRequest.getStatus() + "\n\n";
+                        
+                        String updatedHistory = patient.getMedicalHistory() + assignmentNote;
+                        dbManager.updatePatientHistory(patient.getId(), updatedHistory);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Warning: Could not update patient medical history: " + e.getMessage());
+                }
             } else {
                 selectedTreatmentRequest.setAssignedDoctorId(0);
                 selectedTreatmentRequest.setAssignedDoctorName(null);
