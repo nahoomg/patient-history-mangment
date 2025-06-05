@@ -17,13 +17,20 @@ import java.io.IOException;
 public class Main extends Application {
     private DatabaseManager dbManager;
     private Doctor currentDoctor;
+    
+    // Constants for window settings
+    public static final double DEFAULT_WIDTH = 1280;
+    public static final double DEFAULT_HEIGHT = 800;
+    public static final boolean USE_MAXIMIZED = true;
 
     @Override
     public void start(Stage primaryStage) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
+            Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             primaryStage.setTitle("City Hospital Management System");
-            primaryStage.setScene(new Scene(root));
+            primaryStage.setScene(scene);
+            primaryStage.setMaximized(USE_MAXIMIZED);
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,5 +1,6 @@
 package com.hospital.controllers;
 
+import com.hospital.Main;
 import com.hospital.models.Doctor;
 import com.hospital.models.Admin;
 import com.hospital.models.Patient;
@@ -82,8 +83,10 @@ public class LoginController {
             
             Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
             stage.setTitle("Patient Registration - City Hospital");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
             System.out.println("ERROR loading registration page: " + e.getMessage());
@@ -105,8 +108,10 @@ public class LoginController {
             controller.setAdmin(admin);
             
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
             stage.setTitle("Admin Dashboard - City Hospital");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
             showMessage("Error loading admin dashboard: " + e.getMessage(), true);
@@ -122,8 +127,10 @@ public class LoginController {
             controller.setDoctor(doctor);
             
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
             stage.setTitle("Doctor Dashboard - City Hospital");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
             showMessage("Error loading doctor dashboard: " + e.getMessage(), true);
@@ -139,8 +146,10 @@ public class LoginController {
             controller.setPatient(patient);
             
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
             stage.setTitle("Patient Dashboard - City Hospital");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
             showMessage("Error loading patient dashboard: " + e.getMessage(), true);

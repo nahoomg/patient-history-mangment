@@ -30,6 +30,103 @@
     -fx-text-fill: #555;
 }
 
+/* Modern Tab Pane Styling */
+.modern-tab-pane {
+    -fx-tab-min-width: 120px;
+    -fx-tab-max-width: 120px;
+    -fx-tab-min-height: 40px;
+}
+
+.registration-tab {
+    -fx-font-size: 14px;
+}
+
+.tab-content {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 5 5;
+}
+
+/* Page Title and Step Indicator */
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F51B5;
+}
+
+.step-indicator {
+    -fx-font-size: 14px;
+    -fx-fill: #757575;
+    -fx-font-style: italic;
+}
+
+/* Form Styling */
+.form-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+}
+
+.modern-field {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 8 12;
+    -fx-font-size: 14px;
+}
+
+.modern-field:focused {
+    -fx-border-color: #3F51B5;
+    -fx-effect: dropshadow(three-pass-box, rgba(63,81,181,0.2), 5, 0, 0, 0);
+}
+
+/* Button Styling */
+.button {
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+}
+
+.navigation-button {
+    -fx-min-width: 100px;
+    -fx-background-color: #E0E0E0;
+    -fx-text-fill: #424242;
+}
+
+.primary-button {
+    -fx-background-color: #3F51B5;
+    -fx-text-fill: white;
+}
+
+.action-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-min-width: 100px;
+    -fx-font-weight: bold;
+}
+
+.secondary-button {
+    -fx-background-color: #607D8B;
+    -fx-text-fill: white;
+    -fx-min-width: 100px;
+}
+
+.message-label {
+    -fx-font-size: 14px;
+    -fx-padding: 5 0 0 0;
+}
+
+/* Container Styling */
+.header-container {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 0, 0, 0, 2);
+}
+
+.footer-container {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 0, 0, 0, -2);
+}
+
 /* Table Styling */
 .table-view {
     -fx-background-color: transparent;
@@ -57,11 +154,6 @@
 .table-view .table-row-cell:selected {
     -fx-background-color: #E3F2FD;
     -fx-text-fill: #2C3E50;
-}
-
-/* Button Styling */
-.button {
-    -fx-cursor: hand;
 }
 
 /* Card Styling */

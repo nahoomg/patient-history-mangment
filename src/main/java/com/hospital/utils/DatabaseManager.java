@@ -378,6 +378,24 @@ public class DatabaseManager {
             pstmt.executeUpdate();
         }
     }
+    
+    public String getPatientMedicalHistory(int patientId) throws SQLException {
+        String sql = "SELECT medicalHistory FROM patients WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, patientId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("medicalHistory");
+            }
+            return "";
+        }
+    }
+    
+    public void updatePatientMedicalHistory(int patientId, String medicalHistory) throws SQLException {
+        updatePatientHistory(patientId, medicalHistory);
+    }
 
     public void updatePatient(Patient patient) throws SQLException {
         String sql = "UPDATE patients SET firstName = ?, lastName = ?, contactNumber = ?, address = ? WHERE id = ?";

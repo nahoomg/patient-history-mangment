@@ -1,5 +1,6 @@
 package com.hospital.controllers;
 
+import com.hospital.Main;
 import com.hospital.models.Doctor;
 import com.hospital.models.Admin;
 import com.hospital.models.Patient;
@@ -492,8 +493,10 @@ public class AdminDashboardController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("City Hospital Management System");
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+            stage.setScene(scene);
+            stage.setTitle("City Hospital Management System - Login");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
             showAlert("Error logging out: " + e.getMessage());
