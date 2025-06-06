@@ -6,7 +6,6 @@ import com.hospital.models.Admin;
 import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
 import com.hospital.models.Hospital;
-import com.hospital.models.ActivityLog;
 import com.hospital.utils.ChartUtils;
 import com.hospital.utils.DatabaseManager;
 import javafx.fxml.FXML;
@@ -27,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Bounds;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.Label;
 import java.io.IOException;
@@ -37,6 +37,13 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.List;
 import java.util.Optional;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.layout.GridPane;
 
 public class AdminDashboardController implements Initializable {
     // Dashboard elements
@@ -124,11 +131,7 @@ public class AdminDashboardController implements Initializable {
     @FXML private PasswordField editHospitalPasswordField;
     @FXML private Label hospitalStatusLabel;
 
-    // Recent activity tracking
-    @FXML private TableView<ActivityLog> recentActivityTable;
-    @FXML private TableColumn<ActivityLog, String> activityTimeColumn;
-    @FXML private TableColumn<ActivityLog, String> activityTypeColumn;
-    @FXML private TableColumn<ActivityLog, String> activityDescriptionColumn;
+    // Add with the other field declarations at the top of the class
 
     // Add with the other field declarations at the top of the class
     @FXML private TextArea medicalHistoryTextArea;
@@ -140,7 +143,6 @@ public class AdminDashboardController implements Initializable {
     private ObservableList<Patient> patientsList;
     // private ObservableList<TreatmentRequest> treatmentRequestsList;
     private ObservableList<Hospital> hospitalsList;
-    private ObservableList<ActivityLog> activityLogList;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -150,7 +152,6 @@ public class AdminDashboardController implements Initializable {
         patientsList = FXCollections.observableArrayList();
         // treatmentRequestsList = FXCollections.observableArrayList();
         hospitalsList = FXCollections.observableArrayList();
-        activityLogList = FXCollections.observableArrayList();
         
         initializeDashboard();
         // initializeTreatmentRequests();
@@ -158,7 +159,6 @@ public class AdminDashboardController implements Initializable {
         initializeAdminManagement();
         initializePatientManagement();
         initializeHospitalManagement();
-        initializeActivityLog();
         
         loadData();
     }
@@ -390,14 +390,7 @@ public class AdminDashboardController implements Initializable {
         if (hospitalDetailsPane != null) hospitalDetailsPane.setVisible(false);
     }
     
-    private void initializeActivityLog() {
-        if (recentActivityTable != null) {
-            activityTimeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTimestamp()));
-            activityTypeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getActivityType()));
-            activityDescriptionColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescription()));
-            recentActivityTable.setItems(activityLogList);
-        }
-    }
+
     
     private void loadData() {
         try {
@@ -524,66 +517,57 @@ public class AdminDashboardController implements Initializable {
             // Load treatment urgency chart
             treatmentUrgencyChart.getData().clear();
             
-            // Make sure the chart is visible
-            treatmentUrgencyChart.setAnimated(false);
-            treatmentUrgencyChart.setLegendVisible(true);
-            
+            // Create a series for the data
             XYChart.Series<String, Number> urgencySeries = new XYChart.Series<>();
             urgencySeries.setName("Treatment Requests");
             
-            // Use placeholder data with clear labels
+            // Add data points
             urgencySeries.getData().add(new XYChart.Data<>("Low", 12));
             urgencySeries.getData().add(new XYChart.Data<>("Medium", 8));
             urgencySeries.getData().add(new XYChart.Data<>("High", 5));
             urgencySeries.getData().add(new XYChart.Data<>("Emergency", 2));
             
+            // Add the series to the chart
             treatmentUrgencyChart.getData().add(urgencySeries);
             
-            // Apply consistent colors and show data values directly
-            Platform.runLater(() -> {
-                // Apply colors to the bars
-                String[] colors = {"#66cc66", "#ffcc00", "#ff9900", "#ff3333"};
-                int i = 0;
-                
-                for (XYChart.Data<String, Number> data : urgencySeries.getData()) {
-                    final int index = i++;
-                    final String color = colors[index % colors.length];
-                    final Number value = data.getYValue();
-                    
-                    // Create a label for the data value with larger font size
-                    Label dataLabel = new Label(value.toString());
-                    dataLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-background-color: white; -fx-padding: 2px 6px; -fx-background-radius: 3px;");
-                    
-                    // Set up listener for when the node is created
-                    data.nodeProperty().addListener((obs, oldNode, newNode) -> {
-                        if (newNode != null) {
-                            // Apply color directly
-                            newNode.setStyle("-fx-bar-fill: " + color + ";");
-                            
-                            // Position the label above the bar
-                            StackPane pane = (StackPane) newNode.getParent();
-                            if (pane != null) {
-                                pane.getChildren().add(dataLabel);
-                                StackPane.setAlignment(dataLabel, Pos.TOP_CENTER);
-                                StackPane.setMargin(dataLabel, new Insets(0, 0, 5, 0));
-                            }
-                            
-                            // Add tooltip
-                            Tooltip tooltip = new Tooltip(data.getXValue() + ": " + value);
-                            Tooltip.install(newNode, tooltip);
-                        }
-                    });
-                }
-            });
+            // Apply consistent colors to the chart
+            ChartUtils.styleUrgencyChart(urgencySeries);
             
-            // Load activity log with placeholder data
-            if (activityLogList != null) {
-                activityLogList.clear();
-                activityLogList.add(new ActivityLog("Today 10:30 AM", "Login", "Admin user logged in"));
-                activityLogList.add(new ActivityLog("Today 10:35 AM", "Add", "New hospital registered: City Hospital"));
-                activityLogList.add(new ActivityLog("Today 11:15 AM", "Update", "System configuration updated"));
-                activityLogList.add(new ActivityLog("Yesterday 3:45 PM", "Add", "New patient registered: John Smith"));
-                activityLogList.add(new ActivityLog("Yesterday 2:20 PM", "Update", "Hospital contact information updated"));
+            // Also apply CSS styling directly to the chart
+            treatmentUrgencyChart.getStylesheets().add(getClass().getResource("/com/hospital/chart-styles.css").toExternalForm());
+            
+            // Add style classes and tooltips to the bars
+            for (XYChart.Data<String, Number> data : urgencySeries.getData()) {
+                String urgencyLevel = data.getXValue();
+                Number value = data.getYValue();
+                
+                // Set up listener for when the node is created
+                data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) {
+                        // Apply specific style class
+                        switch (urgencyLevel) {
+                            case "Emergency":
+                                newNode.getStyleClass().add("emergency-bar");
+                                break;
+                            case "High":
+                                newNode.getStyleClass().add("high-bar");
+                                break;
+                            case "Medium":
+                                newNode.getStyleClass().add("medium-bar");
+                                break;
+                            case "Low":
+                                newNode.getStyleClass().add("low-bar");
+                                break;
+                            default:
+                                break;
+                        }
+                        
+                        // Add tooltip
+                        Tooltip tooltip = new Tooltip(urgencyLevel + ": " + value);
+                        tooltip.setStyle("-fx-font-size: 14px;");
+                        Tooltip.install(newNode, tooltip);
+                    }
+                });
             }
             
             // Load all data tables
@@ -715,11 +699,11 @@ public class AdminDashboardController implements Initializable {
             System.out.println("Created sample hospital");
             
             // Add to activity log
-            activityLogList.add(0, new ActivityLog(
-                formatCurrentTime(),
-                "Add",
-                "Sample hospital created: City General Hospital"
-            ));
+            // activityLogList.add(0, new ActivityLog(
+            //     formatCurrentTime(),
+            //     "Add",
+            //     "Sample hospital created: City General Hospital"
+            // ));
         } catch (SQLException e) {
             System.err.println("Error creating sample hospital: " + e.getMessage());
             e.printStackTrace();
@@ -888,11 +872,11 @@ public class AdminDashboardController implements Initializable {
             dbManager.updateHospital(selectedHospital);
             
             // Add to activity log
-            activityLogList.add(0, new ActivityLog(
-                formatCurrentTime(),
-                "Update",
-                "Hospital information updated: " + selectedHospital.getName()
-            ));
+            // activityLogList.add(0, new ActivityLog(
+            //     formatCurrentTime(),
+            //     "Update",
+            //     "Hospital information updated: " + selectedHospital.getName()
+            // ));
             
             showAlert("Hospital updated successfully");
             loadHospitals();
@@ -922,11 +906,11 @@ public class AdminDashboardController implements Initializable {
                 dbManager.deleteHospital(selectedHospital.getId());
                 
                 // Add to activity log
-                activityLogList.add(0, new ActivityLog(
-                    formatCurrentTime(),
-                    "Delete",
-                    "Hospital deleted: " + selectedHospital.getName()
-                ));
+                // activityLogList.add(0, new ActivityLog(
+                //     formatCurrentTime(),
+                //     "Delete",
+                //     "Hospital deleted: " + selectedHospital.getName()
+                // ));
                 
                 showAlert("Hospital deleted successfully");
                 loadHospitals();
@@ -979,11 +963,11 @@ public class AdminDashboardController implements Initializable {
                 dbManager.deletePatient(selectedPatient.getId());
                 
                 // Add to activity log
-                activityLogList.add(0, new ActivityLog(
-                    formatCurrentTime(),
-                    "Delete",
-                    "Patient deleted: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
-                ));
+                // activityLogList.add(0, new ActivityLog(
+                //     formatCurrentTime(),
+                //     "Delete",
+                //     "Patient deleted: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
+                // ));
                 
                 showAlert("Patient deleted successfully");
                 loadPatients();
@@ -1008,11 +992,11 @@ public class AdminDashboardController implements Initializable {
             dbManager.updatePatientMedicalHistory(selectedPatient.getId(), medicalHistory);
             
             // Add to activity log
-            activityLogList.add(0, new ActivityLog(
-                formatCurrentTime(),
-                "Update",
-                "Medical history updated for patient: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
-            ));
+            // activityLogList.add(0, new ActivityLog(
+            //     formatCurrentTime(),
+            //     "Update",
+            //     "Medical history updated for patient: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
+            // ));
             
             showAlert("Medical history updated successfully");
         } catch (SQLException e) {
@@ -1262,11 +1246,11 @@ public class AdminDashboardController implements Initializable {
                 dbManager.deleteAdmin(selectedAdmin.getId());
                 
                 // Add to activity log
-                activityLogList.add(0, new ActivityLog(
-                    formatCurrentTime(),
-                    "Delete",
-                    "Admin deleted: " + selectedAdmin.getFullName()
-                ));
+                // activityLogList.add(0, new ActivityLog(
+                //     formatCurrentTime(),
+                //     "Delete",
+                //     "Admin deleted: " + selectedAdmin.getFullName()
+                // ));
                 
                 showAlert("Admin deleted successfully");
                 loadAdmins();

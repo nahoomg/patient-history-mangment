@@ -17,6 +17,11 @@
     -fx-bar-fill: #66cc66; /* Green */
 }
 
+/* Ensure data labels are visible */
+.label {
+    -fx-z-index: 1000;
+}
+
 /* Gender chart colors - match exactly with the sidebar */
 .chart-pie-label {
     -fx-font-size: 14px;
@@ -69,6 +74,8 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: #333333;
+    -fx-background-color: white;
+    -fx-padding: 2px 5px;
 }
 
 /* Ensure tooltip visibility */

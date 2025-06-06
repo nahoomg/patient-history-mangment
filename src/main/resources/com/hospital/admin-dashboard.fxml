@@ -29,142 +29,118 @@
         <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-tab-min-height: 40; -fx-tab-max-height: 40;">
             <!-- Dashboard Tab -->
             <Tab text="Dashboard">
-                <ScrollPane fitToWidth="true" pannable="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <content>
-                        <VBox spacing="20" style="-fx-background-color: #f8f9fa; -fx-padding: 20;">
-                            <HBox spacing="20" alignment="CENTER">
-                                <!-- Hospital Stats Card -->
-                                <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
-                                    <Label text="Total Hospitals" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                <VBox spacing="20" style="-fx-background-color: #f8f9fa; -fx-padding: 20;">
+                    <HBox spacing="20" alignment="CENTER">
+                        <!-- Hospital Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Total Hospitals" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="totalHospitalsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Patient Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Total Patients" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="totalPatientsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                        
+                        <!-- Doctor Stats Card -->
+                        <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
+                            <Label text="Total Doctors" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
+                                <font>
+                                    <Font size="14" />
+                                </font>
+                            </Label>
+                            <Label fx:id="totalDoctorsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="28" />
+                                </font>
+                            </Label>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Charts -->
+                    <HBox spacing="20" VBox.vgrow="ALWAYS">
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Patient Gender Distribution" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <HBox spacing="10" VBox.vgrow="ALWAYS">
+                                <PieChart fx:id="genderDistributionChart" legendVisible="false" labelsVisible="false" HBox.hgrow="ALWAYS" />
+                                <VBox spacing="15" alignment="CENTER" minWidth="150" style="-fx-padding: 10;">
+                                    <Label text="Gender Statistics" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
                                         <font>
-                                            <Font size="14" />
+                                            <Font name="System Bold" size="14" />
                                         </font>
                                     </Label>
-                                    <Label fx:id="totalHospitalsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="28" />
-                                        </font>
-                                    </Label>
-                                </VBox>
-                                
-                                <!-- Patient Stats Card -->
-                                <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
-                                    <Label text="Total Patients" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
-                                        <font>
-                                            <Font size="14" />
-                                        </font>
-                                    </Label>
-                                    <Label fx:id="totalPatientsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="28" />
-                                        </font>
-                                    </Label>
-                                </VBox>
-                                
-                                <!-- Doctor Stats Card -->
-                                <VBox styleClass="stat-card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" HBox.hgrow="ALWAYS">
-                                    <Label text="Total Doctors" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;">
-                                        <font>
-                                            <Font size="14" />
-                                        </font>
-                                    </Label>
-                                    <Label fx:id="totalDoctorsLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="28" />
-                                        </font>
-                                    </Label>
-                                </VBox>
-                            </HBox>
-                            
-                            <!-- Charts -->
-                            <HBox spacing="20" VBox.vgrow="ALWAYS">
-                                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
-                                    <Label text="Patient Gender Distribution" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="16" />
-                                        </font>
-                                    </Label>
-                                    <Separator style="-fx-opacity: 0.3;" />
-                                    <HBox spacing="10" VBox.vgrow="ALWAYS">
-                                        <PieChart fx:id="genderDistributionChart" legendVisible="false" labelsVisible="false" HBox.hgrow="ALWAYS" />
-                                        <VBox spacing="15" alignment="CENTER" minWidth="150" style="-fx-padding: 10;">
-                                            <Label text="Gender Statistics" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                                <font>
-                                                    <Font name="System Bold" size="14" />
-                                                </font>
-                                            </Label>
-                                            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #E8F5E9; -fx-background-radius: 5;">
-                                                <Rectangle width="15" height="15" fill="#4CAF50" />
-                                                <VBox>
-                                                    <Label text="Male" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
-                                                    <Label fx:id="maleCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
-                                                </VBox>
-                                            </HBox>
-                                            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #E3F2FD; -fx-background-radius: 5;">
-                                                <Rectangle width="15" height="15" fill="#2196F3" />
-                                                <VBox>
-                                                    <Label text="Female" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
-                                                    <Label fx:id="femaleCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
-                                                </VBox>
-                                            </HBox>
-                                            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #FFF3E0; -fx-background-radius: 5;">
-                                                <Rectangle width="15" height="15" fill="#FF9800" />
-                                                <VBox>
-                                                    <Label text="Other" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
-                                                    <Label fx:id="otherCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
-                                                </VBox>
-                                            </HBox>
-                                            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #F5F5F5; -fx-background-radius: 5;">
-                                                <Rectangle width="15" height="15" fill="#9E9E9E" />
-                                                <VBox>
-                                                    <Label text="Total" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
-                                                    <Label fx:id="totalGenderCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
-                                                </VBox>
-                                            </HBox>
+                                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #E8F5E9; -fx-background-radius: 5;">
+                                        <Rectangle width="15" height="15" fill="#4CAF50" />
+                                        <VBox>
+                                            <Label text="Male" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
+                                            <Label fx:id="maleCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #E3F2FD; -fx-background-radius: 5;">
+                                        <Rectangle width="15" height="15" fill="#2196F3" />
+                                        <VBox>
+                                            <Label text="Female" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
+                                            <Label fx:id="femaleCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #FFF3E0; -fx-background-radius: 5;">
+                                        <Rectangle width="15" height="15" fill="#FF9800" />
+                                        <VBox>
+                                            <Label text="Other" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
+                                            <Label fx:id="otherCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 5 10; -fx-background-color: #F5F5F5; -fx-background-radius: 5;">
+                                        <Rectangle width="15" height="15" fill="#9E9E9E" />
+                                        <VBox>
+                                            <Label text="Total" style="-fx-font-size: 12px; -fx-text-fill: #2C3E50;" />
+                                            <Label fx:id="totalGenderCountLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
                                         </VBox>
                                     </HBox>
                                 </VBox>
-                                
-                                <!-- Treatment Requests by Urgency Chart -->
-                                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
-                                    <Label text="Treatment Requests by Urgency" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="16" />
-                                        </font>
-                                    </Label>
-                                    <Separator style="-fx-opacity: 0.3;" />
-                                    <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" animated="false" barGap="4" categoryGap="10" VBox.vgrow="ALWAYS">
-                                        <xAxis>
-                                            <CategoryAxis label="Urgency Level" tickLabelRotation="0" animated="false" />
-                                        </xAxis>
-                                        <yAxis>
-                                            <NumberAxis label="Number of Requests" tickLabelGap="5" animated="false" />
-                                        </yAxis>
-                                    </BarChart>
-                                </VBox>
-                            </HBox>
-
-                            <!-- Additional dashboard content -->
-                            <HBox spacing="20" VBox.vgrow="ALWAYS">
-                                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
-                                    <Label text="System Activity" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="16" />
-                                        </font>
-                                    </Label>
-                                    <Separator style="-fx-opacity: 0.3;" />
-                                    <TableView fx:id="recentActivityTable" VBox.vgrow="ALWAYS">
-                                        <columns>
-                                            <TableColumn fx:id="activityTimeColumn" text="Time" prefWidth="120"/>
-                                            <TableColumn fx:id="activityTypeColumn" text="Activity" prefWidth="100"/>
-                                            <TableColumn fx:id="activityDescriptionColumn" text="Description" prefWidth="350"/>
-                                        </columns>
-                                    </TableView>
-                                </VBox>
                             </HBox>
                         </VBox>
-                    </content>
-                </ScrollPane>
+                        
+                        <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                            <Label text="Treatment Requests by Urgency" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+                                <font>
+                                    <Font name="System Bold" size="16" />
+                                </font>
+                            </Label>
+                            <Separator style="-fx-opacity: 0.3;" />
+                            <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" VBox.vgrow="ALWAYS">
+                                <xAxis>
+                                    <CategoryAxis label="Urgency Level" />
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Number of Requests" />
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+                    </HBox>
+                </VBox>
             </Tab>
             
             <!-- Patient Management Tab -->
