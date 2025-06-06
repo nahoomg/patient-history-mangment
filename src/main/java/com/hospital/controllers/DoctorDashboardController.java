@@ -4,6 +4,7 @@ import com.hospital.Main;
 import com.hospital.models.Doctor;
 import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
+import com.hospital.utils.ChartUtils;
 import com.hospital.utils.DatabaseManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,17 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
-import javafx.stage.ButtonType;
-import javafx.stage.ButtonBar;
-import javafx.stage.Dialog;
-import javafx.stage.TextArea;
-import javafx.stage.Label;
-import javafx.stage.VBox;
-import javafx.stage.WindowEvent;
 
 public class DoctorDashboardController implements Initializable {
     // Dashboard elements
@@ -205,12 +195,50 @@ public class DoctorDashboardController implements Initializable {
         int highUrgency = countTreatmentsByUrgency("High");
         int emergencyUrgency = countTreatmentsByUrgency("Emergency");
         
+        // Add data in specific order (Low to Emergency)
         series.getData().add(new XYChart.Data<>("Low", lowUrgency));
         series.getData().add(new XYChart.Data<>("Medium", mediumUrgency));
         series.getData().add(new XYChart.Data<>("High", highUrgency));
         series.getData().add(new XYChart.Data<>("Emergency", emergencyUrgency));
         
         treatmentUrgencyChart.getData().add(series);
+        
+        // Apply consistent colors to the chart
+        ChartUtils.styleUrgencyChart(series);
+        
+        // Also apply CSS styling directly to the chart
+        treatmentUrgencyChart.getStylesheets().add(getClass().getResource("/com/hospital/chart-styles.css").toExternalForm());
+        
+        // Add style classes and tooltips to the bars
+        for (XYChart.Data<String, Number> data : series.getData()) {
+            String urgencyLevel = data.getXValue();
+            
+            // Set up listener for when the node is created
+            data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    // Apply specific style class
+                    switch (urgencyLevel) {
+                        case "Emergency":
+                            newNode.getStyleClass().add("emergency-bar");
+                            break;
+                        case "High":
+                            newNode.getStyleClass().add("high-bar");
+                            break;
+                        case "Medium":
+                            newNode.getStyleClass().add("medium-bar");
+                            break;
+                        case "Low":
+                            newNode.getStyleClass().add("low-bar");
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                    // Add tooltip
+                    Tooltip.install(newNode, new Tooltip(urgencyLevel + ": " + data.getYValue()));
+                }
+            });
+        }
     }
     
     private int countTreatmentsByStatus(String status) {
@@ -333,22 +361,6 @@ public class DoctorDashboardController implements Initializable {
     }
     
     @FXML
-    private void handleLogout() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
-            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
-            stage.setScene(scene);
-            stage.setTitle("City Hospital Management System - Login");
-            stage.setMaximized(false);
-            stage.centerOnScreen();
-            stage.show();
-        } catch (IOException e) {
-            showAlert("Error logging out: " + e.getMessage());
-        }
-    }
-    
-    @FXML
     private void handleViewMedicalHistory() {
         if (selectedTreatmentRequest == null) {
             showAlert("No treatment selected");
@@ -365,59 +377,52 @@ public class DoctorDashboardController implements Initializable {
                 return;
             }
             
-            // Create a dialog for editing medical history
-            Dialog<String> dialog = new Dialog<>();
-            dialog.setTitle("Patient Medical History");
-            dialog.setHeaderText("Edit Medical History for " + patient.getFirstName() + " " + patient.getLastName());
+            // Load the medical history editor
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/medical-history-editor.fxml"));
+            Parent root = loader.load();
             
-            // Set the button types
-            ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+            // Get the controller and set the patient
+            MedicalHistoryEditorController controller = loader.getController();
+            controller.setPatient(patient);
             
-            // Create the medical history text area
-            TextArea medicalHistoryArea = new TextArea();
-            medicalHistoryArea.setPrefWidth(500);
-            medicalHistoryArea.setPrefHeight(400);
-            medicalHistoryArea.setWrapText(true);
+            // Create and show the dialog
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Patient Medical History");
+            dialogStage.initOwner(welcomeLabel.getScene().getWindow());
+            dialogStage.setScene(new Scene(root));
+            dialogStage.showAndWait();
             
-            // Load current medical history
-            String currentHistory = dbManager.getPatientMedicalHistory(patientId);
-            medicalHistoryArea.setText(currentHistory);
-            
-            // Set the content
-            VBox content = new VBox(10);
-            content.getChildren().add(new Label("Medical History:"));
-            content.getChildren().add(medicalHistoryArea);
-            dialog.getDialogPane().setContent(content);
-            
-            // Request focus on the text area by default
-            Platform.runLater(medicalHistoryArea::requestFocus);
-            
-            // Convert the result to a string when the save button is clicked
-            dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == saveButtonType) {
-                    return medicalHistoryArea.getText();
-                }
-                return null;
-            });
-            
-            // Show the dialog and process the result
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(updatedHistory -> {
-                try {
-                    dbManager.updatePatientMedicalHistory(patientId, updatedHistory);
-                    showAlert("Medical history updated successfully");
-                } catch (SQLException e) {
-                    showAlert("Error updating medical history: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
+            // Check if changes were saved
+            if (controller.isSaveClicked()) {
+                showAlert("Medical history updated successfully");
+            }
             
         } catch (SQLException e) {
             showAlert("Error loading patient data: " + e.getMessage());
             e.printStackTrace();
+        } catch (IOException e) {
+            showAlert("Error opening medical history editor: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+    
+    @FXML
+    private void handleLogout() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/login.fxml"));
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
+            stage.setScene(scene);
+            stage.setTitle("City Hospital Management System - Login");
+            stage.setMaximized(false);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Error logging out: " + e.getMessage());
+        }
+    }
+    
+
     
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

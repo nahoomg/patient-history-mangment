@@ -1,0 +1,51 @@
+/* Chart-specific styles for the hospital management system */
+
+/* Urgency level bar colors */
+.emergency-bar {
+    -fx-bar-fill: #ff3333; /* Red */
+}
+
+.high-bar {
+    -fx-bar-fill: #ff9900; /* Orange */
+}
+
+.medium-bar {
+    -fx-bar-fill: #ffcc00; /* Yellow */
+}
+
+.low-bar {
+    -fx-bar-fill: #66cc66; /* Green */
+}
+
+/* Override default chart colors */
+.chart-bar {
+    -fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 5 5 0 0, 4 4 0 0, 3 3 0 0;
+}
+
+.default-color0.chart-bar { -fx-bar-fill: #999999; }
+
+/* Add some styling to make charts look better */
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: #e0e0e0;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #e0e0e0;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+}
+
+/* Ensure bars have consistent width */
+.chart-bar {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-bar-fill: #999999;
+} 

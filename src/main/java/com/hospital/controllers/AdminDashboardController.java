@@ -7,6 +7,7 @@ import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
 import com.hospital.models.Hospital;
 import com.hospital.models.ActivityLog;
+import com.hospital.utils.ChartUtils;
 import com.hospital.utils.DatabaseManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -92,6 +93,7 @@ public class AdminDashboardController implements Initializable {
     @FXML private Label patientFullNameLabel;
     @FXML private Label patientDobGenderLabel;
     @FXML private Label patientContactLabel;
+    @FXML private Label patientStatusLabel;
 
     // Hospital management elements
     @FXML private Label totalHospitalsLabel;
@@ -185,11 +187,48 @@ public class AdminDashboardController implements Initializable {
         patientIdColumn.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getId())));
         patientFirstNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFirstName()));
         patientLastNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLastName()));
-        patientDobColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDateOfBirth().toString()));
+        patientDobColumn.setCellValueFactory(cellData -> {
+            LocalDate dob = cellData.getValue().getDateOfBirth();
+            return new SimpleStringProperty(dob != null ? dob.toString() : "N/A");
+        });
         patientGenderColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getGender()));
         patientContactColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getContactNumber()));
         
+        // Set initial column constraints
+        patientIdColumn.setMinWidth(40);
+        patientFirstNameColumn.setMinWidth(80);
+        patientLastNameColumn.setMinWidth(80);
+        patientDobColumn.setMinWidth(100);
+        patientGenderColumn.setMinWidth(60);
+        patientContactColumn.setMinWidth(80);
+        
         patientsTable.setItems(patientsList);
+        
+        // Set column resize policy for better fit
+        patientsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Add listener for when the table width changes (window resize)
+        patientsTable.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() > 0) {
+                adjustPatientTableColumns();
+            }
+        });
+        
+        // Add listener for when the scene is shown (to adjust columns after rendering)
+        patientsTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(this::adjustPatientTableColumns);
+                
+                // Also listen for window resize events
+                newScene.windowProperty().addListener((winObs, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.widthProperty().addListener((widthObs, oldWidth, newWidth) -> {
+                            Platform.runLater(this::adjustPatientTableColumns);
+                        });
+                    }
+                });
+            }
+        });
         
         // Add selection listener for patient details
         patientsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -314,12 +353,49 @@ public class AdminDashboardController implements Initializable {
             urgencySeries.setName("Treatment Requests");
             
             // Use placeholder data instead of actual treatment data
-            urgencySeries.getData().add(new XYChart.Data<>("Emergency", 2));
-            urgencySeries.getData().add(new XYChart.Data<>("High", 5));
-            urgencySeries.getData().add(new XYChart.Data<>("Medium", 8));
             urgencySeries.getData().add(new XYChart.Data<>("Low", 12));
+            urgencySeries.getData().add(new XYChart.Data<>("Medium", 8));
+            urgencySeries.getData().add(new XYChart.Data<>("High", 5));
+            urgencySeries.getData().add(new XYChart.Data<>("Emergency", 2));
             
             treatmentUrgencyChart.getData().add(urgencySeries);
+            
+            // Apply consistent colors to the chart
+            ChartUtils.styleUrgencyChart(urgencySeries);
+            
+            // Also apply CSS styling directly to the chart
+            treatmentUrgencyChart.getStylesheets().add(getClass().getResource("/com/hospital/chart-styles.css").toExternalForm());
+            
+            // Add style classes and tooltips to the bars
+            for (XYChart.Data<String, Number> data : urgencySeries.getData()) {
+                String urgencyLevel = data.getXValue();
+                
+                // Set up listener for when the node is created
+                data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) {
+                        // Apply specific style class
+                        switch (urgencyLevel) {
+                            case "Emergency":
+                                newNode.getStyleClass().add("emergency-bar");
+                                break;
+                            case "High":
+                                newNode.getStyleClass().add("high-bar");
+                                break;
+                            case "Medium":
+                                newNode.getStyleClass().add("medium-bar");
+                                break;
+                            case "Low":
+                                newNode.getStyleClass().add("low-bar");
+                                break;
+                            default:
+                                break;
+                        }
+                        
+                        // Add tooltip
+                        Tooltip.install(newNode, new Tooltip(urgencyLevel + ": " + data.getYValue()));
+                    }
+                });
+            }
             
             // Load activity log with placeholder data
             if (activityLogList != null) {
@@ -354,7 +430,39 @@ public class AdminDashboardController implements Initializable {
     
     private void loadPatients() throws SQLException {
         patientsList.clear();
-        patientsList.addAll(dbManager.getAllPatients());
+        List<Patient> patients = dbManager.getAllPatients();
+        patientsList.addAll(patients);
+        
+        // Debug output
+        System.out.println("Loaded " + patients.size() + " patients");
+        for (Patient p : patients) {
+            System.out.println("Patient: " + p.getId() + " - " + p.getFirstName() + " " + p.getLastName());
+        }
+        
+        // Ensure the table is properly set with the items
+        patientsTable.setItems(null); // Clear the table first
+        patientsTable.layout(); // Force layout refresh
+        patientsTable.setItems(patientsList); // Set the items again
+        
+        // Update status label if it exists
+        if (patientStatusLabel != null) {
+            patientStatusLabel.setText("Loaded " + patients.size() + " patients");
+        }
+        
+        // Adjust columns to fit screen
+        Platform.runLater(() -> {
+            adjustPatientTableColumns();
+            
+            // Force another adjustment after a short delay to ensure proper sizing
+            new Thread(() -> {
+                try {
+                    Thread.sleep(200);
+                    Platform.runLater(this::adjustPatientTableColumns);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        });
     }
     
     private void loadHospitals() throws SQLException {
@@ -765,6 +873,45 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleRefreshPatients() {
+        try {
+            // Clear the table first
+            patientsList.clear();
+            patientsTable.setItems(null);
+            patientsTable.layout();
+            
+            // Update status label
+            if (patientStatusLabel != null) {
+                patientStatusLabel.setText("Refreshing patient list...");
+            }
+            
+            // Load patients from database
+            loadPatients();
+            
+            // Adjust table columns to fit screen
+            adjustPatientTableColumns();
+            
+            // Force refresh of the UI
+            patientsTable.refresh();
+            
+            // Update status label with timestamp
+            if (patientStatusLabel != null) {
+                patientStatusLabel.setText("Refreshed at " + formatCurrentTime() + " - " + patientsList.size() + " patients");
+            }
+            
+            showAlert("Patient list refreshed successfully");
+        } catch (SQLException e) {
+            // Update status label with error
+            if (patientStatusLabel != null) {
+                patientStatusLabel.setText("Error refreshing: " + e.getMessage());
+            }
+            
+            showAlert("Error refreshing patients: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * Adjusts the hospital table columns to fit the screen properly
      */
@@ -819,6 +966,59 @@ public class AdminDashboardController implements Initializable {
         hospitalsTable.refresh();
     }
     
+    /**
+     * Adjusts the patient table columns to fit the screen properly
+     */
+    private void adjustPatientTableColumns() {
+        // Set column resize policy
+        patientsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Force the table to layout and update its width
+        patientsTable.applyCss();
+        patientsTable.layout();
+        
+        // Get the actual width of the table's content area
+        double tableWidth = patientsTable.getWidth();
+        if (tableWidth <= 0) {
+            // If width is not yet available, use the scene width as a fallback
+            if (patientsTable.getScene() != null) {
+                tableWidth = patientsTable.getScene().getWidth() - 60; // Subtract padding
+            } else {
+                tableWidth = 800; // Default fallback width
+            }
+        }
+        
+        // Clear any previous constraints
+        patientIdColumn.setMinWidth(40);
+        patientFirstNameColumn.setMinWidth(80);
+        patientLastNameColumn.setMinWidth(80);
+        patientDobColumn.setMinWidth(100);
+        patientGenderColumn.setMinWidth(60);
+        patientContactColumn.setMinWidth(80);
+        
+        // Set proportional widths
+        double totalWidth = tableWidth - 20; // Account for scrollbar and padding
+        
+        // ID column should be small
+        patientIdColumn.setPrefWidth(totalWidth * 0.07); // 7%
+        
+        // Name columns
+        patientFirstNameColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        patientLastNameColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Date of birth needs more space
+        patientDobColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Gender is short
+        patientGenderColumn.setPrefWidth(totalWidth * 0.13); // 13%
+        
+        // Contact gets the remaining space
+        patientContactColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Force the table to refresh
+        patientsTable.refresh();
+    }
+    
     private String formatCurrentTime() {
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, h:mm a");
         return java.time.LocalDateTime.now().format(formatter);
@@ -836,9 +1036,13 @@ public class AdminDashboardController implements Initializable {
         if (patientDetailsPane == null) return;
         
         patientFullNameLabel.setText(patient.getFirstName() + " " + patient.getLastName());
-        patientDobGenderLabel.setText(patient.getDateOfBirth().toString() + " / " + patient.getGender());
+        
+        LocalDate dob = patient.getDateOfBirth();
+        String dobText = dob != null ? dob.toString() : "N/A";
+        patientDobGenderLabel.setText(dobText + " / " + patient.getGender());
+        
         patientContactLabel.setText(patient.getContactNumber());
-        medicalHistoryTextArea.setText(patient.getMedicalHistory());
+        medicalHistoryTextArea.setText(patient.getMedicalHistory() != null ? patient.getMedicalHistory() : "");
         
         patientDetailsPane.setVisible(true);
     }

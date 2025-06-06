@@ -375,11 +375,18 @@
 }
 
 .refresh-button {
-    -fx-background-color: #3F51B5;
+    -fx-background-color: #2196F3;
     -fx-text-fill: white;
     -fx-background-radius: 5;
     -fx-cursor: hand;
     -fx-padding: 8 15;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);
+}
+
+.refresh-button:hover {
+    -fx-background-color: #1976D2;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
 }
 
 .delete-button {

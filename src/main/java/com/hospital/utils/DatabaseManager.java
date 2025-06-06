@@ -485,28 +485,57 @@ public class DatabaseManager {
     }
     
     public List<Patient> searchPatients(String searchTerm) throws SQLException {
+        return searchPatients(searchTerm, 0); // 0 means search across all hospitals
+    }
+    
+    public List<Patient> searchPatients(String searchTerm, int hospitalId) throws SQLException {
         List<Patient> patients = new ArrayList<>();
-        String sql = "SELECT * FROM patients WHERE firstName LIKE ? OR lastName LIKE ? OR contactNumber LIKE ?";
+        String sql;
+        
+        if (hospitalId > 0) {
+            // Filter by hospital ID if provided
+            sql = "SELECT * FROM patients WHERE (firstName LIKE ? OR lastName LIKE ? OR contactNumber LIKE ?) AND hospital_id = ?";
+        } else {
+            // Search across all hospitals
+            sql = "SELECT * FROM patients WHERE firstName LIKE ? OR lastName LIKE ? OR contactNumber LIKE ?";
+        }
+        
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             String term = "%" + searchTerm + "%";
             pstmt.setString(1, term);
             pstmt.setString(2, term);
             pstmt.setString(3, term);
+            
+            if (hospitalId > 0) {
+                pstmt.setInt(4, hospitalId);
+            }
+            
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next()) {
+                LocalDate dob = null;
+                String dobStr = rs.getString("dateOfBirth");
+                if (dobStr != null && !dobStr.isEmpty()) {
+                    try {
+                        dob = LocalDate.parse(dobStr);
+                    } catch (Exception e) {
+                        System.err.println("Error parsing date of birth: " + dobStr);
+                    }
+                }
+                
                 Patient patient = new Patient(
                     rs.getInt("id"),
                     rs.getString("firstName"),
                     rs.getString("lastName"),
-                    LocalDate.parse(rs.getString("dateOfBirth")),
+                    dob,
                     rs.getString("gender"),
                     rs.getString("contactNumber"),
                     rs.getString("address"),
                     rs.getString("medicalHistory"),
                     rs.getString("username"),
-                    rs.getString("password")
+                    rs.getString("password"),
+                    rs.getInt("hospital_id")
                 );
                 patients.add(patient);
             }
@@ -845,7 +874,9 @@ public class DatabaseManager {
             ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                return rs.getInt(1);
+                int count = rs.getInt(1);
+                System.out.println("Found " + count + " doctors for hospital ID: " + hospitalId);
+                return count;
             }
         }
         return 0;
@@ -1307,11 +1338,21 @@ public class DatabaseManager {
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next()) {
+                LocalDate dob = null;
+                String dobStr = rs.getString("dateOfBirth");
+                if (dobStr != null && !dobStr.isEmpty()) {
+                    try {
+                        dob = LocalDate.parse(dobStr);
+                    } catch (Exception e) {
+                        System.err.println("Error parsing date of birth: " + dobStr);
+                    }
+                }
+                
                 Patient patient = new Patient(
                     rs.getInt("id"),
                     rs.getString("firstName"),
                     rs.getString("lastName"),
-                    LocalDate.parse(rs.getString("dateOfBirth")),
+                    dob,
                     rs.getString("gender"),
                     rs.getString("contactNumber"),
                     rs.getString("address"),
