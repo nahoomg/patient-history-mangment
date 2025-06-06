@@ -2,6 +2,7 @@ package com.hospital.controllers;
 
 import com.hospital.Main;
 import com.hospital.models.Doctor;
+import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
 import com.hospital.utils.DatabaseManager;
 import javafx.fxml.FXML;
@@ -18,6 +19,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -25,8 +27,20 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import javafx.stage.ButtonType;
+import javafx.stage.ButtonBar;
+import javafx.stage.Dialog;
+import javafx.stage.TextArea;
+import javafx.stage.Label;
+import javafx.stage.VBox;
+import javafx.stage.WindowEvent;
 
 public class DoctorDashboardController implements Initializable {
     // Dashboard elements
@@ -331,6 +345,77 @@ public class DoctorDashboardController implements Initializable {
             stage.show();
         } catch (IOException e) {
             showAlert("Error logging out: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleViewMedicalHistory() {
+        if (selectedTreatmentRequest == null) {
+            showAlert("No treatment selected");
+            return;
+        }
+        
+        try {
+            // Get patient details
+            int patientId = selectedTreatmentRequest.getPatientId();
+            Patient patient = dbManager.getPatientById(patientId);
+            
+            if (patient == null) {
+                showAlert("Patient not found");
+                return;
+            }
+            
+            // Create a dialog for editing medical history
+            Dialog<String> dialog = new Dialog<>();
+            dialog.setTitle("Patient Medical History");
+            dialog.setHeaderText("Edit Medical History for " + patient.getFirstName() + " " + patient.getLastName());
+            
+            // Set the button types
+            ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+            
+            // Create the medical history text area
+            TextArea medicalHistoryArea = new TextArea();
+            medicalHistoryArea.setPrefWidth(500);
+            medicalHistoryArea.setPrefHeight(400);
+            medicalHistoryArea.setWrapText(true);
+            
+            // Load current medical history
+            String currentHistory = dbManager.getPatientMedicalHistory(patientId);
+            medicalHistoryArea.setText(currentHistory);
+            
+            // Set the content
+            VBox content = new VBox(10);
+            content.getChildren().add(new Label("Medical History:"));
+            content.getChildren().add(medicalHistoryArea);
+            dialog.getDialogPane().setContent(content);
+            
+            // Request focus on the text area by default
+            Platform.runLater(medicalHistoryArea::requestFocus);
+            
+            // Convert the result to a string when the save button is clicked
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == saveButtonType) {
+                    return medicalHistoryArea.getText();
+                }
+                return null;
+            });
+            
+            // Show the dialog and process the result
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(updatedHistory -> {
+                try {
+                    dbManager.updatePatientMedicalHistory(patientId, updatedHistory);
+                    showAlert("Medical history updated successfully");
+                } catch (SQLException e) {
+                    showAlert("Error updating medical history: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+            
+        } catch (SQLException e) {
+            showAlert("Error loading patient data: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

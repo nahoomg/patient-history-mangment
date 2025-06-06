@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20;" xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.MedicalHistoryEditorController">
+    <Label text="Patient Medical History" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+        <font>
+            <Font name="System Bold" size="20" />
+        </font>
+    </Label>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Patient:" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;" />
+        <Label fx:id="patientNameLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;" />
+    </HBox>
+    
+    <Label text="Medical History:" style="-fx-font-size: 14px; -fx-text-fill: #7F8C8D;" />
+    
+    <TextArea fx:id="medicalHistoryTextArea" wrapText="true" prefHeight="300" prefWidth="600" 
+              style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+    
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="cancelButton" text="Cancel" 
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+            <font>
+                <Font size="12" />
+            </font>
+        </Button>
+        <Button fx:id="saveButton" text="Save Changes" 
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Button>
+    </HBox>
+</VBox> 
