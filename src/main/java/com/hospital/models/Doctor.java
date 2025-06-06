@@ -9,11 +9,12 @@ public class Doctor {
     private String email;
     private String username;
     private String password;
+    private int hospitalId;
 
     public Doctor() {}
 
     public Doctor(int id, String firstName, String lastName, String specialization,
-                 String contactNumber, String email, String username, String password) {
+                 String contactNumber, String email, String username, String password, int hospitalId) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -22,6 +23,7 @@ public class Doctor {
         this.email = email;
         this.username = username;
         this.password = password;
+        this.hospitalId = hospitalId;
     }
 
     // Getters and Setters
@@ -48,6 +50,9 @@ public class Doctor {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    public int getHospitalId() { return hospitalId; }
+    public void setHospitalId(int hospitalId) { this.hospitalId = hospitalId; }
 
     @Override
     public String toString() {

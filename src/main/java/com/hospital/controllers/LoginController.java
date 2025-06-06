@@ -66,9 +66,30 @@ public class LoginController {
     private void loginAsPatient(String username, String password) throws SQLException {
         Patient patient = dbManager.authenticatePatient(username, password);
         if (patient != null) {
-            Session.getInstance().setCurrentUser(patient);
-            Session.getInstance().setUserType("patient");
-            navigateToDashboard("/com/hospital/patient-dashboard.fxml", "Patient Dashboard");
+            try {
+                // Store in session
+                Session.getInstance().setCurrentUser(patient);
+                Session.getInstance().setUserType("patient");
+                
+                // Load the dashboard with patient data
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/patient-dashboard.fxml"));
+                Parent root = loader.load();
+                
+                // Get the controller and set the patient
+                PatientDashboardController controller = loader.getController();
+                controller.setPatient(patient);
+                
+                // Show the dashboard
+                Stage stage = (Stage) usernameField.getScene().getWindow();
+                Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+                stage.setScene(scene);
+                stage.setTitle("Patient Dashboard");
+                stage.setMaximized(Main.USE_MAXIMIZED);
+                stage.show();
+            } catch (IOException e) {
+                messageLabel.setText("Error loading dashboard: " + e.getMessage());
+                e.printStackTrace();
+            }
         } else {
             messageLabel.setText("Invalid patient credentials");
         }
@@ -125,16 +146,16 @@ public class LoginController {
     @FXML
     private void handleRegister() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/registration-choice.fxml"));
+            // Load patient registration form directly instead of showing registration choice
+            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/patient-registration.fxml"));
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, Main.LOGIN_WIDTH, Main.LOGIN_HEIGHT);
+            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
             stage.setScene(scene);
-            stage.setTitle("Registration Options");
-            stage.setMaximized(false);
-            stage.centerOnScreen();
+            stage.setTitle("Patient Registration - City Hospital");
+            stage.setMaximized(Main.USE_MAXIMIZED);
             stage.show();
         } catch (IOException e) {
-            messageLabel.setText("Error loading registration page: " + e.getMessage());
+            messageLabel.setText("Error loading patient registration page: " + e.getMessage());
             e.printStackTrace();
         }
     }

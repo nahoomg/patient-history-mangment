@@ -1,7 +1,9 @@
 package com.hospital.controllers;
 
 import com.hospital.models.Doctor;
+import com.hospital.models.Hospital;
 import com.hospital.utils.DatabaseManager;
+import com.hospital.utils.Session;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -23,19 +25,25 @@ public class DoctorFormController implements Initializable {
     @FXML private Label messageLabel;
 
     private DatabaseManager dbManager;
-    private AdminDashboardController parentController;
+    private Hospital currentHospital;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         dbManager = DatabaseManager.getInstance();
         
+        // Get current hospital from session
+        try {
+            currentHospital = (Hospital) Session.getInstance().getCurrentUser();
+            if (currentHospital == null) {
+                showMessage("Error: Hospital information not found", true);
+            }
+        } catch (ClassCastException e) {
+            showMessage("Error: Invalid user type", true);
+        }
+        
         // Set up button handlers
         saveButton.setOnAction(e -> handleSaveDoctor());
         cancelButton.setOnAction(e -> handleCancel());
-    }
-    
-    public void setParentController(AdminDashboardController controller) {
-        this.parentController = controller;
     }
     
     @FXML
@@ -59,6 +67,16 @@ public class DoctorFormController implements Initializable {
             doctor.setEmail(emailField.getText());
             doctor.setUsername(usernameField.getText());
             doctor.setPassword(passwordField.getText());
+            
+            // Set the hospital ID
+            if (currentHospital != null) {
+                doctor.setHospitalId(currentHospital.getId());
+                System.out.println("Setting hospital ID: " + currentHospital.getId() + " for doctor: " + 
+                                  doctor.getFirstName() + " " + doctor.getLastName());
+            } else {
+                showMessage("Error: Cannot determine hospital for doctor", true);
+                return;
+            }
             
             // Save to database
             dbManager.addDoctor(doctor);

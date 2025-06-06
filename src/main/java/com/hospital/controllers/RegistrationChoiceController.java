@@ -11,7 +11,6 @@ import java.io.IOException;
 
 public class RegistrationChoiceController {
     @FXML private Button patientButton;
-    @FXML private Button hospitalButton;
 
     @FXML
     private void handlePatientRegistration() {
@@ -25,22 +24,6 @@ public class RegistrationChoiceController {
             stage.show();
         } catch (IOException e) {
             System.out.println("Error loading patient registration page: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleHospitalRegistration() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/hospital/hospital-registration.fxml"));
-            Stage stage = (Stage) hospitalButton.getScene().getWindow();
-            Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
-            stage.setScene(scene);
-            stage.setTitle("Hospital Registration - City Hospital");
-            stage.setMaximized(Main.USE_MAXIMIZED);
-            stage.show();
-        } catch (IOException e) {
-            System.out.println("Error loading hospital registration page: " + e.getMessage());
             e.printStackTrace();
         }
     }

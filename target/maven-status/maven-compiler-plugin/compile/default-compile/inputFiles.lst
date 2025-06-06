@@ -12,9 +12,11 @@ C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospita
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\utils\Session.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\models\Patient.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\LoginController.java
+C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\PatientFormController.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\models\Hospital.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\models\Doctor.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\DoctorFormController.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\HospitalFormController.java
+C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\TreatmentRequestFormController.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\controllers\AdminFormController.java
 C:\Users\nahom\OneDrive\Documents\oop projects\patient\src\main\java\com\hospital\models\ActivityLog.java

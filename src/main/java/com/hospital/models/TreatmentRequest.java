@@ -13,6 +13,8 @@ public class TreatmentRequest {
     private String status;
     private int assignedDoctorId;
     private String assignedDoctorName;
+    private int hospitalId;
+    private String hospitalName;
 
     public TreatmentRequest() {
         this.dateRequested = LocalDate.now();
@@ -21,7 +23,8 @@ public class TreatmentRequest {
 
     public TreatmentRequest(int id, int patientId, String patientName, LocalDate dateRequested, 
                            LocalDate preferredDate, String urgency, String symptoms, 
-                           String status, int assignedDoctorId, String assignedDoctorName) {
+                           String status, int assignedDoctorId, String assignedDoctorName,
+                           int hospitalId, String hospitalName) {
         this.id = id;
         this.patientId = patientId;
         this.patientName = patientName;
@@ -32,6 +35,8 @@ public class TreatmentRequest {
         this.status = status;
         this.assignedDoctorId = assignedDoctorId;
         this.assignedDoctorName = assignedDoctorName;
+        this.hospitalId = hospitalId;
+        this.hospitalName = hospitalName;
     }
 
     // Getters and Setters
@@ -64,4 +69,10 @@ public class TreatmentRequest {
 
     public String getAssignedDoctorName() { return assignedDoctorName; }
     public void setAssignedDoctorName(String assignedDoctorName) { this.assignedDoctorName = assignedDoctorName; }
+    
+    public int getHospitalId() { return hospitalId; }
+    public void setHospitalId(int hospitalId) { this.hospitalId = hospitalId; }
+    
+    public String getHospitalName() { return hospitalName; }
+    public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
 } 

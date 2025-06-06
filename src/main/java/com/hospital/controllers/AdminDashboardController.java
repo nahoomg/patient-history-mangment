@@ -41,31 +41,35 @@ public class AdminDashboardController implements Initializable {
     @FXML private BarChart<String, Number> treatmentUrgencyChart;
     
     // Treatment request elements
-    @FXML private ComboBox<String> urgencyFilterComboBox;
-    @FXML private TableView<TreatmentRequest> treatmentRequestsTable;
-    @FXML private TableColumn<TreatmentRequest, String> treatmentIdColumn;
-    @FXML private TableColumn<TreatmentRequest, String> patientNameColumn;
-    @FXML private TableColumn<TreatmentRequest, String> dateRequestedColumn;
-    @FXML private TableColumn<TreatmentRequest, String> preferredDateColumn;
-    @FXML private TableColumn<TreatmentRequest, String> urgencyColumn;
-    @FXML private TableColumn<TreatmentRequest, String> statusColumn;
-    @FXML private TableColumn<TreatmentRequest, String> assignedDoctorColumn;
-    @FXML private VBox treatmentDetailsPane;
-    @FXML private Label selectedPatientLabel;
-    @FXML private TextArea symptomsTextArea;
-    @FXML private ComboBox<Doctor> doctorAssignmentComboBox;
-    @FXML private ComboBox<String> statusComboBox;
+    // @FXML private ComboBox<String> urgencyFilterComboBox;
+    // @FXML private TableView<TreatmentRequest> treatmentRequestsTable;
+    // @FXML private TableColumn<TreatmentRequest, String> treatmentIdColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> patientNameColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> dateRequestedColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> preferredDateColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> urgencyColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> statusColumn;
+    // @FXML private TableColumn<TreatmentRequest, String> assignedDoctorColumn;
+    // @FXML private VBox treatmentDetailsPane;
+    // @FXML private Label selectedPatientLabel;
+    // @FXML private TextArea symptomsTextArea;
+    // @FXML private ComboBox<Doctor> doctorAssignmentComboBox;
+    // @FXML private ComboBox<String> statusComboBox;
     
     // Doctor management elements
-    @FXML private TextField doctorSearchField;
-    @FXML private TableView<Doctor> doctorsTable;
-    @FXML private TableColumn<Doctor, String> doctorIdColumn;
-    @FXML private TableColumn<Doctor, String> doctorFirstNameColumn;
-    @FXML private TableColumn<Doctor, String> doctorLastNameColumn;
-    @FXML private TableColumn<Doctor, String> doctorSpecializationColumn;
-    @FXML private TableColumn<Doctor, String> doctorContactColumn;
-    @FXML private TableColumn<Doctor, String> doctorEmailColumn;
-    @FXML private TableColumn<Doctor, String> doctorUsernameColumn;
+    // @FXML private TextField doctorSearchField;
+    // @FXML private TableView<Doctor> doctorsTable;
+    // @FXML private TableColumn<Doctor, String> doctorIdColumn;
+    // @FXML private TableColumn<Doctor, String> doctorFirstNameColumn;
+    // @FXML private TableColumn<Doctor, String> doctorLastNameColumn;
+    // @FXML private TableColumn<Doctor, String> doctorSpecializationColumn;
+    // @FXML private TableColumn<Doctor, String> doctorContactColumn;
+    // @FXML private TableColumn<Doctor, String> doctorEmailColumn;
+    // @FXML private TableColumn<Doctor, String> doctorUsernameColumn;
+    // @FXML private TextField editDoctorNameField;
+    // @FXML private TextField editDoctorSpecializationField;
+    // @FXML private TextField editDoctorContactField;
+    // @FXML private TextField editDoctorEmailField;
     
     // Admin management elements
     @FXML private TableView<Admin> adminsTable;
@@ -83,6 +87,10 @@ public class AdminDashboardController implements Initializable {
     @FXML private TableColumn<Patient, String> patientDobColumn;
     @FXML private TableColumn<Patient, String> patientGenderColumn;
     @FXML private TableColumn<Patient, String> patientContactColumn;
+    @FXML private VBox patientDetailsPane;
+    @FXML private Label patientFullNameLabel;
+    @FXML private Label patientDobGenderLabel;
+    @FXML private Label patientContactLabel;
 
     // Hospital management elements
     @FXML private Label totalHospitalsLabel;
@@ -100,8 +108,10 @@ public class AdminDashboardController implements Initializable {
     @FXML private TextArea editHospitalAddressField;
     @FXML private TextField editHospitalContactField;
     @FXML private TextField editHospitalEmailField;
+    @FXML private TextField editHospitalWebsiteField;
     @FXML private TextField editHospitalUsernameField;
     @FXML private PasswordField editHospitalPasswordField;
+    @FXML private Label hospitalStatusLabel;
 
     // Recent activity tracking
     @FXML private TableView<ActivityLog> recentActivityTable;
@@ -109,29 +119,31 @@ public class AdminDashboardController implements Initializable {
     @FXML private TableColumn<ActivityLog, String> activityTypeColumn;
     @FXML private TableColumn<ActivityLog, String> activityDescriptionColumn;
 
+    // Add with the other field declarations at the top of the class
+    @FXML private TextArea medicalHistoryTextArea;
+
     private DatabaseManager dbManager;
     private Admin currentAdmin;
-    private ObservableList<Doctor> doctorsList;
+    // private ObservableList<Doctor> doctorsList;
     private ObservableList<Admin> adminsList;
     private ObservableList<Patient> patientsList;
-    private ObservableList<TreatmentRequest> treatmentRequestsList;
-    private TreatmentRequest selectedTreatmentRequest;
+    // private ObservableList<TreatmentRequest> treatmentRequestsList;
     private ObservableList<Hospital> hospitalsList;
     private ObservableList<ActivityLog> activityLogList;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         dbManager = DatabaseManager.getInstance();
-        doctorsList = FXCollections.observableArrayList();
+        // doctorsList = FXCollections.observableArrayList();
         adminsList = FXCollections.observableArrayList();
         patientsList = FXCollections.observableArrayList();
-        treatmentRequestsList = FXCollections.observableArrayList();
+        // treatmentRequestsList = FXCollections.observableArrayList();
         hospitalsList = FXCollections.observableArrayList();
         activityLogList = FXCollections.observableArrayList();
         
         initializeDashboard();
-        initializeTreatmentRequests();
-        initializeDoctorManagement();
+        // initializeTreatmentRequests();
+        // initializeDoctorManagement();
         initializeAdminManagement();
         initializePatientManagement();
         initializeHospitalManagement();
@@ -150,51 +162,11 @@ public class AdminDashboardController implements Initializable {
     }
     
     private void initializeTreatmentRequests() {
-        // Initialize urgency filter
-        urgencyFilterComboBox.getItems().addAll("All", "Emergency", "High", "Medium", "Low");
-        urgencyFilterComboBox.setValue("All");
-        urgencyFilterComboBox.setOnAction(e -> filterTreatmentRequests());
-        
-        // Initialize treatment request table columns
-        treatmentIdColumn.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getId())));
-        patientNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPatientName()));
-        dateRequestedColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDateRequested().toString()));
-        preferredDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPreferredDate().toString()));
-        urgencyColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUrgency()));
-        statusColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus()));
-        assignedDoctorColumn.setCellValueFactory(cellData -> {
-            String doctorName = cellData.getValue().getAssignedDoctorName();
-            return new SimpleStringProperty(doctorName != null && !doctorName.isEmpty() ? doctorName : "Not Assigned");
-        });
-        
-        // Set up treatment request selection handler
-        treatmentRequestsTable.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    selectedTreatmentRequest = newSelection;
-                    showTreatmentDetails(newSelection);
-                }
-            }
-        );
-        
-        // Initialize status combo box
-        statusComboBox.getItems().addAll("Pending", "Assigned", "In Progress", "Completed", "Cancelled");
-        
-        // Hide treatment details pane initially
-        treatmentDetailsPane.setVisible(false);
+        // This method is no longer needed
     }
     
     private void initializeDoctorManagement() {
-        // Initialize doctor table columns
-        doctorIdColumn.setCellValueFactory(cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getId())));
-        doctorFirstNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFirstName()));
-        doctorLastNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLastName()));
-        doctorSpecializationColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSpecialization()));
-        doctorContactColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getContactNumber()));
-        doctorEmailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
-        doctorUsernameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUsername()));
-        
-        doctorsTable.setItems(doctorsList);
+        // This method is no longer needed
     }
     
     private void initializeAdminManagement() {
@@ -217,6 +189,20 @@ public class AdminDashboardController implements Initializable {
         patientContactColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getContactNumber()));
         
         patientsTable.setItems(patientsList);
+        
+        // Add selection listener for patient details
+        patientsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                showPatientDetails(newSelection);
+            } else {
+                patientDetailsPane.setVisible(false);
+            }
+        });
+        
+        // Hide patient details pane initially
+        if (patientDetailsPane != null) {
+            patientDetailsPane.setVisible(false);
+        }
     }
     
     private void initializeHospitalManagement() {
@@ -239,6 +225,16 @@ public class AdminDashboardController implements Initializable {
             }
         });
         
+        // Set column resize properties for better fit
+        hospitalsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Add listener for when the table width changes (window resize)
+        hospitalsTable.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() > 0) {
+                adjustHospitalTableColumns();
+            }
+        });
+        
         // Hide hospital details pane initially
         if (hospitalDetailsPane != null) hospitalDetailsPane.setVisible(false);
     }
@@ -257,7 +253,7 @@ public class AdminDashboardController implements Initializable {
             // Load statistics for dashboard
             totalPatientsLabel.setText(String.valueOf(dbManager.getTotalPatientsCount()));
             totalDoctorsLabel.setText(String.valueOf(dbManager.getTotalDoctorsCount()));
-            pendingTreatmentsLabel.setText(String.valueOf(dbManager.getPendingTreatmentsCount()));
+            // pendingTreatmentsLabel.setText(String.valueOf(dbManager.getPendingTreatmentsCount()));
             
             // Add hospital count
             if (totalHospitalsLabel != null) {
@@ -291,10 +287,13 @@ public class AdminDashboardController implements Initializable {
             treatmentUrgencyChart.getData().clear();
             XYChart.Series<String, Number> urgencySeries = new XYChart.Series<>();
             urgencySeries.setName("Treatment Requests");
-            Map<String, Integer> urgencyDistribution = dbManager.getTreatmentUrgencyDistribution();
-            for (Map.Entry<String, Integer> entry : urgencyDistribution.entrySet()) {
-                urgencySeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-            }
+            
+            // Use placeholder data instead of actual treatment data
+            urgencySeries.getData().add(new XYChart.Data<>("Emergency", 2));
+            urgencySeries.getData().add(new XYChart.Data<>("High", 5));
+            urgencySeries.getData().add(new XYChart.Data<>("Medium", 8));
+            urgencySeries.getData().add(new XYChart.Data<>("Low", 12));
+            
             treatmentUrgencyChart.getData().add(urgencySeries);
             
             // Load activity log with placeholder data
@@ -302,14 +301,12 @@ public class AdminDashboardController implements Initializable {
                 activityLogList.clear();
                 activityLogList.add(new ActivityLog("Today 10:30 AM", "Login", "Admin user logged in"));
                 activityLogList.add(new ActivityLog("Today 10:35 AM", "Add", "New hospital registered: City Hospital"));
-                activityLogList.add(new ActivityLog("Today 11:15 AM", "Update", "Doctor assignment updated for patient #12345"));
-                activityLogList.add(new ActivityLog("Yesterday 3:45 PM", "Add", "New doctor added: Dr. Sarah Johnson"));
+                activityLogList.add(new ActivityLog("Today 11:15 AM", "Update", "System configuration updated"));
+                activityLogList.add(new ActivityLog("Yesterday 3:45 PM", "Add", "New patient registered: John Smith"));
                 activityLogList.add(new ActivityLog("Yesterday 2:20 PM", "Update", "Hospital contact information updated"));
             }
             
             // Load all data tables
-            loadTreatmentRequests();
-            loadDoctors();
             loadAdmins();
             loadPatients();
             loadHospitals();
@@ -322,80 +319,7 @@ public class AdminDashboardController implements Initializable {
     }
     
     private void loadTreatmentRequests() throws SQLException {
-        // Clear and reload the treatment requests list
-        treatmentRequestsList.clear();
-        treatmentRequestsList.addAll(dbManager.getAllTreatmentRequests());
-        
-        // Ensure the table is properly set with the items
-        treatmentRequestsTable.setItems(treatmentRequestsList);
-        
-        // Debug output to check if we're getting treatment requests
-        System.out.println("Loaded " + treatmentRequestsList.size() + " treatment requests");
-        
-        // If no treatment requests exist, create a sample one for testing
-        if (treatmentRequestsList.isEmpty() && dbManager.getTotalPatientsCount() > 0) {
-            try {
-                // Get the first patient for the sample request
-                Patient patient = dbManager.getAllPatients().get(0);
-                
-                // Create a sample treatment request
-                TreatmentRequest sampleRequest = new TreatmentRequest();
-                sampleRequest.setPatientId(patient.getId());
-                sampleRequest.setPatientName(patient.getFirstName() + " " + patient.getLastName());
-                sampleRequest.setDateRequested(LocalDate.now());
-                sampleRequest.setPreferredDate(LocalDate.now().plusDays(3));
-                sampleRequest.setUrgency("Medium");
-                sampleRequest.setSymptoms("Sample symptoms for testing the treatment request system.");
-                sampleRequest.setStatus("Pending");
-                
-                // Add to database
-                dbManager.addTreatmentRequest(sampleRequest);
-                
-                // Reload the list
-                treatmentRequestsList.clear();
-                treatmentRequestsList.addAll(dbManager.getAllTreatmentRequests());
-                treatmentRequestsTable.setItems(treatmentRequestsList);
-                
-                System.out.println("Created a sample treatment request for testing");
-            } catch (Exception e) {
-                System.out.println("Could not create sample treatment request: " + e.getMessage());
-            }
-        }
-        
-        // Populate doctor assignment combo box
-        ObservableList<Doctor> doctorsForAssignment = FXCollections.observableArrayList();
-        doctorsForAssignment.addAll(dbManager.getAllDoctors());
-        doctorAssignmentComboBox.setItems(doctorsForAssignment);
-        
-        // Add a custom toString method for the Doctor objects in the ComboBox
-        doctorAssignmentComboBox.setCellFactory(param -> new ListCell<Doctor>() {
-            @Override
-            protected void updateItem(Doctor doctor, boolean empty) {
-                super.updateItem(doctor, empty);
-                if (empty || doctor == null) {
-                    setText(null);
-                } else {
-                    setText(doctor.getFirstName() + " " + doctor.getLastName() + " (" + doctor.getSpecialization() + ")");
-                }
-            }
-        });
-        
-        doctorAssignmentComboBox.setButtonCell(new ListCell<Doctor>() {
-            @Override
-            protected void updateItem(Doctor doctor, boolean empty) {
-                super.updateItem(doctor, empty);
-                if (empty || doctor == null) {
-                    setText(null);
-                } else {
-                    setText(doctor.getFirstName() + " " + doctor.getLastName() + " (" + doctor.getSpecialization() + ")");
-                }
-            }
-        });
-    }
-    
-    private void loadDoctors() throws SQLException {
-        doctorsList.clear();
-        doctorsList.addAll(dbManager.getAllDoctors());
+        // This method is no longer needed
     }
     
     private void loadAdmins() throws SQLException {
@@ -412,28 +336,66 @@ public class AdminDashboardController implements Initializable {
         hospitalsList.clear();
         List<Hospital> hospitals = dbManager.getAllHospitals();
         hospitalsList.addAll(hospitals);
+        
+        // Debug output
+        System.out.println("Loaded " + hospitals.size() + " hospitals");
+        for (Hospital h : hospitals) {
+            System.out.println("Hospital: " + h.getId() + " - " + h.getName());
+        }
+        
+        // If no hospitals exist, create a sample one
+        if (hospitals.isEmpty()) {
+            createSampleHospital();
+            // Reload hospitals
+            hospitals = dbManager.getAllHospitals();
+            hospitalsList.clear();
+            hospitalsList.addAll(hospitals);
+        }
+        
+        // Update status label
+        if (hospitalStatusLabel != null) {
+            hospitalStatusLabel.setText("Loaded " + hospitals.size() + " hospitals");
+        }
+        
+        // Ensure the table is properly set with the items
+        hospitalsTable.setItems(null); // Clear the table first
+        hospitalsTable.layout(); // Force layout refresh
+        hospitalsTable.setItems(hospitalsList); // Set the items again
+        
+        // Adjust columns to fit screen
+        // We need to wait for JavaFX to render the table before adjusting columns
+        javafx.application.Platform.runLater(this::adjustHospitalTableColumns);
+    }
+    
+    private void createSampleHospital() {
+        try {
+            Hospital sampleHospital = new Hospital();
+            sampleHospital.setName("City General Hospital");
+            sampleHospital.setAddress("123 Main Street, Urban Area");
+            sampleHospital.setContactNumber("555-123-4567");
+            sampleHospital.setEmail("info@citygeneral.com");
+            sampleHospital.setWebsite("www.citygeneral.com");
+            sampleHospital.setUsername("citygeneral");
+            sampleHospital.setPassword("hospital123");
+            sampleHospital.setDescription("A leading healthcare provider in the city");
+            
+            dbManager.addHospital(sampleHospital);
+            System.out.println("Created sample hospital");
+            
+            // Add to activity log
+            activityLogList.add(0, new ActivityLog(
+                formatCurrentTime(),
+                "Add",
+                "Sample hospital created: City General Hospital"
+            ));
+        } catch (SQLException e) {
+            System.err.println("Error creating sample hospital: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     private void showTreatmentDetails(TreatmentRequest request) {
-        selectedPatientLabel.setText(request.getPatientName());
-        symptomsTextArea.setText(request.getSymptoms());
-        statusComboBox.setValue(request.getStatus());
-        
-        // Set selected doctor if assigned
-        if (request.getAssignedDoctorId() > 0) {
-            try {
-                Doctor assignedDoctor = dbManager.getDoctorById(request.getAssignedDoctorId());
-                if (assignedDoctor != null) {
-                    doctorAssignmentComboBox.setValue(assignedDoctor);
-                }
-            } catch (SQLException e) {
-                System.out.println("Error loading assigned doctor: " + e.getMessage());
-            }
-        } else {
-            doctorAssignmentComboBox.setValue(null);
-        }
-        
-        treatmentDetailsPane.setVisible(true);
+        // This method is no longer needed
     }
     
     private void showHospitalDetails(Hospital hospital) {
@@ -443,6 +405,7 @@ public class AdminDashboardController implements Initializable {
         editHospitalAddressField.setText(hospital.getAddress());
         editHospitalContactField.setText(hospital.getContactNumber());
         editHospitalEmailField.setText(hospital.getEmail());
+        editHospitalWebsiteField.setText(hospital.getWebsite());
         editHospitalUsernameField.setText(hospital.getUsername());
         editHospitalPasswordField.setText(""); // Don't display actual password for security
         
@@ -450,107 +413,17 @@ public class AdminDashboardController implements Initializable {
     }
     
     private void filterTreatmentRequests() {
-        try {
-            String selectedUrgency = urgencyFilterComboBox.getValue();
-            treatmentRequestsList.clear();
-            
-            if ("All".equals(selectedUrgency)) {
-                treatmentRequestsList.addAll(dbManager.getAllTreatmentRequests());
-            } else {
-                treatmentRequestsList.addAll(dbManager.getTreatmentRequestsByUrgency(selectedUrgency));
-            }
-        } catch (SQLException e) {
-            showAlert("Error filtering treatment requests: " + e.getMessage());
-        }
+        // This method is no longer needed
     }
     
     @FXML
     private void handleRefreshTreatments() {
-        try {
-            loadTreatmentRequests();
-        } catch (SQLException e) {
-            showAlert("Error refreshing treatment requests: " + e.getMessage());
-        }
+        // This method is no longer needed
     }
     
     @FXML
     private void handleSaveAssignment() {
-        if (selectedTreatmentRequest == null) {
-            showAlert("Please select a treatment request first.");
-            return;
-        }
-        
-        Doctor selectedDoctor = doctorAssignmentComboBox.getValue();
-        String selectedStatus = statusComboBox.getValue();
-        
-        if (selectedStatus == null) {
-            showAlert("Please select a status.");
-            return;
-        }
-        
-        try {
-            selectedTreatmentRequest.setStatus(selectedStatus);
-            
-            if (selectedDoctor != null) {
-                selectedTreatmentRequest.setAssignedDoctorId(selectedDoctor.getId());
-                selectedTreatmentRequest.setAssignedDoctorName(selectedDoctor.getFirstName() + " " + selectedDoctor.getLastName());
-                
-                // If status is just "Pending" and we're assigning a doctor, update to "Assigned"
-                if ("Pending".equals(selectedStatus)) {
-                    selectedTreatmentRequest.setStatus("Assigned");
-                    statusComboBox.setValue("Assigned");
-                }
-                
-                // Update the patient's medical history to reflect the doctor assignment
-                try {
-                    Patient patient = dbManager.getPatientById(selectedTreatmentRequest.getPatientId());
-                    if (patient != null) {
-                        String assignmentNote = "\n--- DOCTOR ASSIGNED ---\n" +
-                                              "Date: " + LocalDate.now() + "\n" +
-                                              "Doctor: " + selectedDoctor.getFirstName() + " " + selectedDoctor.getLastName() + "\n" +
-                                              "Specialization: " + selectedDoctor.getSpecialization() + "\n" +
-                                              "Status: " + selectedTreatmentRequest.getStatus() + "\n\n";
-                        
-                        String updatedHistory = patient.getMedicalHistory() + assignmentNote;
-                        dbManager.updatePatientHistory(patient.getId(), updatedHistory);
-                    }
-                } catch (Exception e) {
-                    System.out.println("Warning: Could not update patient medical history: " + e.getMessage());
-                }
-            } else {
-                selectedTreatmentRequest.setAssignedDoctorId(0);
-                selectedTreatmentRequest.setAssignedDoctorName(null);
-            }
-            
-            dbManager.updateTreatmentRequest(selectedTreatmentRequest);
-            loadTreatmentRequests();
-            loadData(); // Refresh dashboard statistics
-            
-            showAlert("Treatment assignment saved successfully!");
-        } catch (SQLException e) {
-            showAlert("Error saving assignment: " + e.getMessage());
-        }
-    }
-    
-    @FXML
-    private void handleShowAddDoctorForm() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/doctor-form.fxml"));
-            Parent root = loader.load();
-            
-            DoctorFormController controller = loader.getController();
-            controller.setParentController(this);
-            
-            Stage stage = new Stage();
-            stage.setTitle("Add New Doctor");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            
-            // Refresh doctors list after form is closed
-            loadDoctors();
-        } catch (IOException | SQLException e) {
-            showAlert("Error opening doctor form: " + e.getMessage());
-        }
+        // This method is no longer needed
     }
     
     @FXML
@@ -571,21 +444,6 @@ public class AdminDashboardController implements Initializable {
             loadAdmins();
         } catch (IOException | SQLException e) {
             showAlert("Error opening admin form: " + e.getMessage());
-        }
-    }
-    
-    @FXML
-    private void handleDoctorSearch() {
-        try {
-            String searchTerm = doctorSearchField.getText().trim();
-            if (searchTerm.isEmpty()) {
-                loadDoctors();
-            } else {
-                doctorsList.clear();
-                doctorsList.addAll(dbManager.searchDoctors(searchTerm));
-            }
-        } catch (SQLException e) {
-            showAlert("Error searching doctors: " + e.getMessage());
         }
     }
     
@@ -626,16 +484,18 @@ public class AdminDashboardController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/hospital-form.fxml"));
             Parent root = loader.load();
             
+            HospitalFormController controller = loader.getController();
+            controller.setParentController(this);
+            
             Stage stage = new Stage();
             stage.setTitle("Add New Hospital");
             stage.setScene(new Scene(root));
             stage.showAndWait();
             
-            // Refresh hospital list
+            // Refresh hospitals list after form is closed
             loadHospitals();
-        } catch (Exception e) {
+        } catch (IOException | SQLException e) {
             showAlert("Error opening hospital form: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -683,6 +543,7 @@ public class AdminDashboardController implements Initializable {
         selectedHospital.setAddress(editHospitalAddressField.getText().trim());
         selectedHospital.setContactNumber(editHospitalContactField.getText().trim());
         selectedHospital.setEmail(editHospitalEmailField.getText().trim());
+        selectedHospital.setWebsite(editHospitalWebsiteField.getText().trim());
         selectedHospital.setUsername(editHospitalUsernameField.getText().trim());
         
         // Update password only if provided
@@ -745,6 +606,163 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleShowAddPatientForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/patient-form.fxml"));
+            Parent root = loader.load();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Add New Patient");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            
+            // Refresh patient list
+            loadPatients();
+        } catch (Exception e) {
+            showAlert("Error opening patient form: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleDeletePatient() {
+        Patient selectedPatient = patientsTable.getSelectionModel().getSelectedItem();
+        if (selectedPatient == null) {
+            showAlert("Please select a patient to delete");
+            return;
+        }
+        
+        // Confirm deletion
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Deletion");
+        confirmAlert.setHeaderText("Delete Patient");
+        confirmAlert.setContentText("Are you sure you want to delete the patient: " + 
+                                    selectedPatient.getFirstName() + " " + selectedPatient.getLastName() + 
+                                    "?\n\nThis action cannot be undone.");
+        
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                dbManager.deletePatient(selectedPatient.getId());
+                
+                // Add to activity log
+                activityLogList.add(0, new ActivityLog(
+                    formatCurrentTime(),
+                    "Delete",
+                    "Patient deleted: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
+                ));
+                
+                showAlert("Patient deleted successfully");
+                loadPatients();
+            } catch (SQLException e) {
+                showAlert("Error deleting patient: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    @FXML
+    private void handleSaveMedicalHistory() {
+        Patient selectedPatient = patientsTable.getSelectionModel().getSelectedItem();
+        if (selectedPatient == null) {
+            showAlert("Please select a patient");
+            return;
+        }
+        
+        String medicalHistory = medicalHistoryTextArea.getText();
+        
+        try {
+            dbManager.updatePatientMedicalHistory(selectedPatient.getId(), medicalHistory);
+            
+            // Add to activity log
+            activityLogList.add(0, new ActivityLog(
+                formatCurrentTime(),
+                "Update",
+                "Medical history updated for patient: " + selectedPatient.getFirstName() + " " + selectedPatient.getLastName()
+            ));
+            
+            showAlert("Medical history updated successfully");
+        } catch (SQLException e) {
+            showAlert("Error updating medical history: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleRefreshHospitals() {
+        try {
+            // Clear the table first
+            hospitalsList.clear();
+            hospitalsTable.setItems(null);
+            hospitalsTable.layout();
+            
+            // Update status label
+            if (hospitalStatusLabel != null) {
+                hospitalStatusLabel.setText("Refreshing hospital list...");
+            }
+            
+            // Load hospitals from database
+            loadHospitals();
+            
+            // Adjust table columns to fit screen
+            adjustHospitalTableColumns();
+            
+            // Force refresh of the UI
+            hospitalsTable.refresh();
+            
+            // Update status label with timestamp
+            if (hospitalStatusLabel != null) {
+                hospitalStatusLabel.setText("Refreshed at " + formatCurrentTime() + " - " + hospitalsList.size() + " hospitals");
+            }
+            
+            showAlert("Hospital list refreshed successfully");
+        } catch (SQLException e) {
+            // Update status label with error
+            if (hospitalStatusLabel != null) {
+                hospitalStatusLabel.setText("Error refreshing: " + e.getMessage());
+            }
+            
+            showAlert("Error refreshing hospitals: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Adjusts the hospital table columns to fit the screen properly
+     */
+    private void adjustHospitalTableColumns() {
+        // Set column resize policy
+        hospitalsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Set relative column widths based on content importance
+        double tableWidth = hospitalsTable.getWidth();
+        if (tableWidth > 0) {
+            // ID column should be small
+            hospitalIdColumn.setMaxWidth(tableWidth * 0.07); // 7%
+            hospitalIdColumn.setPrefWidth(tableWidth * 0.07);
+            
+            // Name is important, give it more space
+            hospitalNameColumn.setMaxWidth(tableWidth * 0.20); // 20%
+            hospitalNameColumn.setPrefWidth(tableWidth * 0.20);
+            
+            // Address needs the most space
+            hospitalAddressColumn.setMaxWidth(tableWidth * 0.30); // 30%
+            hospitalAddressColumn.setPrefWidth(tableWidth * 0.30);
+            
+            // Contact and email get moderate space
+            hospitalContactColumn.setMaxWidth(tableWidth * 0.15); // 15%
+            hospitalContactColumn.setPrefWidth(tableWidth * 0.15);
+            
+            hospitalEmailColumn.setMaxWidth(tableWidth * 0.18); // 18%
+            hospitalEmailColumn.setPrefWidth(tableWidth * 0.18);
+            
+            // Username gets the remaining space
+            hospitalUsernameColumn.setMaxWidth(tableWidth * 0.10); // 10%
+            hospitalUsernameColumn.setPrefWidth(tableWidth * 0.10);
+        }
+    }
+    
     private String formatCurrentTime() {
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, h:mm a");
         return java.time.LocalDateTime.now().format(formatter);
@@ -756,5 +774,16 @@ public class AdminDashboardController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    private void showPatientDetails(Patient patient) {
+        if (patientDetailsPane == null) return;
+        
+        patientFullNameLabel.setText(patient.getFirstName() + " " + patient.getLastName());
+        patientDobGenderLabel.setText(patient.getDateOfBirth().toString() + " / " + patient.getGender());
+        patientContactLabel.setText(patient.getContactNumber());
+        medicalHistoryTextArea.setText(patient.getMedicalHistory());
+        
+        patientDetailsPane.setVisible(true);
     }
 } 

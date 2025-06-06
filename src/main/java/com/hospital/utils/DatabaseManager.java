@@ -38,6 +38,7 @@ public class DatabaseManager {
                     System.out.println("A new database has been created.");
                 }
                 createTables(conn, isNewDatabase);
+                updateExistingTables(conn);
             }
         } catch (SQLException e) {
             System.out.println("Error initializing database: " + e.getMessage());
@@ -46,99 +47,151 @@ public class DatabaseManager {
     }
 
     private void createTables(Connection conn, boolean isNewDatabase) throws SQLException {
-        // Create admins table
-        String createAdminsTable = """
-            CREATE TABLE IF NOT EXISTS admins (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                fullName TEXT NOT NULL,
-                email TEXT
-            )
-        """;
-
-        // Create doctors table
-        String createDoctorsTable = """
-            CREATE TABLE IF NOT EXISTS doctors (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                firstName TEXT NOT NULL,
-                lastName TEXT NOT NULL,
-                specialization TEXT NOT NULL,
-                contactNumber TEXT,
-                email TEXT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """;
-
-        // Create patients table
-        String createPatientsTable = """
-            CREATE TABLE IF NOT EXISTS patients (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                firstName TEXT NOT NULL,
-                lastName TEXT NOT NULL,
-                dateOfBirth TEXT NOT NULL,
-                gender TEXT NOT NULL,
-                contactNumber TEXT,
-                address TEXT,
-                medicalHistory TEXT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """;
-        
-        // Create treatment_requests table
-        String createTreatmentRequestsTable = """
-            CREATE TABLE IF NOT EXISTS treatment_requests (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                patient_id INTEGER NOT NULL,
-                date_requested TEXT NOT NULL,
-                preferred_date TEXT NOT NULL,
-                urgency TEXT NOT NULL,
-                symptoms TEXT,
-                status TEXT NOT NULL,
-                assigned_doctor_id INTEGER,
-                FOREIGN KEY (patient_id) REFERENCES patients(id),
-                FOREIGN KEY (assigned_doctor_id) REFERENCES doctors(id)
-            )
-        """;
-
-        // Create hospitals table
-        String createHospitalsTable = """
-            CREATE TABLE IF NOT EXISTS hospitals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                address TEXT,
-                contactNumber TEXT,
-                email TEXT,
-                website TEXT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                description TEXT
-            )
-        """;
-
         try (Statement stmt = conn.createStatement()) {
-            // Create tables if they don't exist
-            stmt.execute(createAdminsTable);
-            stmt.execute(createDoctorsTable);
-            stmt.execute(createPatientsTable);
-            stmt.execute(createTreatmentRequestsTable);
-            stmt.execute(createHospitalsTable);
-            
-            // Add default admin account if this is a new database
             if (isNewDatabase) {
-                String checkAdmin = "SELECT COUNT(*) FROM admins";
-                ResultSet rs = stmt.executeQuery(checkAdmin);
-                if (rs.next() && rs.getInt(1) == 0) {
-                    String insertDefaultAdmin = """
-                        INSERT INTO admins (username, password, fullName, email)
-                        VALUES ('admin', 'admin123', 'System Administrator', 'admin@hospital.com')
-                    """;
-                    stmt.execute(insertDefaultAdmin);
-                    System.out.println("Default admin account created.");
+                // Create admins table
+                String createAdminsTable = """
+                    CREATE TABLE IF NOT EXISTS admins (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        firstName TEXT NOT NULL,
+                        lastName TEXT NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL
+                    )
+                """;
+                stmt.execute(createAdminsTable);
+                
+                // Create patients table
+                String createPatientsTable = """
+                    CREATE TABLE IF NOT EXISTS patients (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        firstName TEXT NOT NULL,
+                        lastName TEXT NOT NULL,
+                        dateOfBirth TEXT NOT NULL,
+                        gender TEXT NOT NULL,
+                        address TEXT NOT NULL,
+                        phoneNumber TEXT NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        bloodType TEXT,
+                        allergies TEXT,
+                        medicalHistory TEXT
+                    )
+                """;
+                stmt.execute(createPatientsTable);
+                
+                // Create hospitals table
+                String createHospitalsTable = """
+                    CREATE TABLE IF NOT EXISTS hospitals (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        address TEXT NOT NULL,
+                        contactNumber TEXT NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        website TEXT,
+                        username TEXT UNIQUE NOT NULL,
+                        description TEXT,
+                        rating REAL DEFAULT 0,
+                        numRatings INTEGER DEFAULT 0
+                    )
+                """;
+                stmt.execute(createHospitalsTable);
+                
+                // Create doctors table
+                String createDoctorsTable = """
+                    CREATE TABLE IF NOT EXISTS doctors (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        firstName TEXT NOT NULL,
+                        lastName TEXT NOT NULL,
+                        specialization TEXT NOT NULL,
+                        contactNumber TEXT NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        hospital_id INTEGER,
+                        FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+                    )
+                """;
+                stmt.execute(createDoctorsTable);
+                
+                // Create treatment_requests table
+                String createTreatmentRequestsTable = """
+                    CREATE TABLE IF NOT EXISTS treatment_requests (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        patient_id INTEGER NOT NULL,
+                        date_requested TEXT NOT NULL,
+                        preferred_date TEXT NOT NULL,
+                        urgency TEXT NOT NULL,
+                        symptoms TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        assigned_doctor_id INTEGER,
+                        hospital_id INTEGER,
+                        FOREIGN KEY (patient_id) REFERENCES patients(id),
+                        FOREIGN KEY (assigned_doctor_id) REFERENCES doctors(id),
+                        FOREIGN KEY (hospital_id) REFERENCES hospitals(id)
+                    )
+                """;
+                stmt.execute(createTreatmentRequestsTable);
+                
+                // Create activity_logs table
+                String createActivityLogsTable = """
+                    CREATE TABLE IF NOT EXISTS activity_logs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_type TEXT NOT NULL,
+                        user_id INTEGER NOT NULL,
+                        action TEXT NOT NULL,
+                        timestamp TEXT NOT NULL
+                    )
+                """;
+                stmt.execute(createActivityLogsTable);
+                
+                // Insert default admin
+                String insertAdmin = "INSERT INTO admins (firstName, lastName, email, username, password) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(insertAdmin)) {
+                    pstmt.setString(1, "Admin");
+                    pstmt.setString(2, "User");
+                    pstmt.setString(3, "admin@hospital.com");
+                    pstmt.setString(4, "admin");
+                    pstmt.setString(5, "admin123");
+                    pstmt.executeUpdate();
                 }
             }
+        }
+    }
+
+    private void updateExistingTables(Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            // Check if hospital_id column exists in treatment_requests table
+            ResultSet rs = conn.getMetaData().getColumns(null, null, "treatment_requests", "hospital_id");
+            if (!rs.next()) {
+                // Add hospital_id to treatment_requests
+                String alterTreatmentRequestsTable = "ALTER TABLE treatment_requests ADD COLUMN hospital_id INTEGER REFERENCES hospitals(id)";
+                stmt.execute(alterTreatmentRequestsTable);
+                System.out.println("Added hospital_id column to treatment_requests table");
+            }
+
+            // Check if hospital_id column exists in doctors table
+            rs = conn.getMetaData().getColumns(null, null, "doctors", "hospital_id");
+            if (!rs.next()) {
+                // Add hospital_id to doctors
+                String alterDoctorsTable = "ALTER TABLE doctors ADD COLUMN hospital_id INTEGER REFERENCES hospitals(id)";
+                stmt.execute(alterDoctorsTable);
+                System.out.println("Added hospital_id column to doctors table");
+            }
+            
+            // Check if hospital_id column exists in patients table
+            rs = conn.getMetaData().getColumns(null, null, "patients", "hospital_id");
+            if (!rs.next()) {
+                // Add hospital_id to patients
+                String alterPatientsTable = "ALTER TABLE patients ADD COLUMN hospital_id INTEGER REFERENCES hospitals(id)";
+                stmt.execute(alterPatientsTable);
+                System.out.println("Added hospital_id column to patients table");
+            }
+        } catch (SQLException e) {
+            System.out.println("Warning: Could not update existing tables: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -199,9 +252,12 @@ public class DatabaseManager {
 
     // Doctor operations
     public void addDoctor(Doctor doctor) throws SQLException {
-        String sql = "INSERT INTO doctors (firstName, lastName, specialization, contactNumber, email, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO doctors (firstName, lastName, specialization, contactNumber, email, username, password, hospital_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        System.out.println("Adding doctor with hospital ID: " + doctor.getHospitalId());
+        
         try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, doctor.getFirstName());
             pstmt.setString(2, doctor.getLastName());
             pstmt.setString(3, doctor.getSpecialization());
@@ -209,7 +265,26 @@ public class DatabaseManager {
             pstmt.setString(5, doctor.getEmail());
             pstmt.setString(6, doctor.getUsername());
             pstmt.setString(7, doctor.getPassword());
-            pstmt.executeUpdate();
+            
+            if (doctor.getHospitalId() > 0) {
+                pstmt.setInt(8, doctor.getHospitalId());
+            } else {
+                throw new SQLException("Hospital ID is required for doctors");
+            }
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Creating doctor failed, no rows affected.");
+            }
+            
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    doctor.setId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating doctor failed, no ID obtained.");
+                }
+            }
         }
     }
 
@@ -229,7 +304,8 @@ public class DatabaseManager {
                     rs.getString("contactNumber"),
                     rs.getString("email"),
                     rs.getString("username"),
-                    rs.getString("password")
+                    rs.getString("password"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0
                 );
                 doctors.add(doctor);
             }
@@ -257,7 +333,8 @@ public class DatabaseManager {
                     rs.getString("contactNumber"),
                     rs.getString("email"),
                     rs.getString("username"),
-                    rs.getString("password")
+                    rs.getString("password"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0
                 );
                 doctors.add(doctor);
             }
@@ -282,7 +359,8 @@ public class DatabaseManager {
                     rs.getString("contactNumber"),
                     rs.getString("email"),
                     rs.getString("username"),
-                    rs.getString("password")
+                    rs.getString("password"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0
                 );
             }
         }
@@ -305,7 +383,8 @@ public class DatabaseManager {
                     rs.getString("contactNumber"),
                     rs.getString("email"),
                     rs.getString("username"),
-                    rs.getString("password")
+                    rs.getString("password"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0
                 );
             }
         }
@@ -350,7 +429,7 @@ public class DatabaseManager {
 
     // Patient operations
     public void addPatient(Patient patient) throws SQLException {
-        String sql = "INSERT INTO patients (firstName, lastName, dateOfBirth, gender, contactNumber, address, medicalHistory, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO patients (firstName, lastName, dateOfBirth, gender, contactNumber, address, medicalHistory, username, password, hospital_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, patient.getFirstName());
@@ -362,6 +441,7 @@ public class DatabaseManager {
             pstmt.setString(7, patient.getMedicalHistory());
             pstmt.setString(8, patient.getUsername());
             pstmt.setString(9, patient.getPassword());
+            pstmt.setInt(10, patient.getHospitalId());
             pstmt.executeUpdate();
         }
     }
@@ -516,7 +596,10 @@ public class DatabaseManager {
     
     // Treatment Request operations
     public void addTreatmentRequest(TreatmentRequest request) throws SQLException {
-        String sql = "INSERT INTO treatment_requests (patient_id, date_requested, preferred_date, urgency, symptoms, status, assigned_doctor_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO treatment_requests (patient_id, date_requested, preferred_date, urgency, symptoms, status, assigned_doctor_id, hospital_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        System.out.println("Adding treatment request with hospital ID: " + request.getHospitalId());
+        
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, request.getPatientId());
@@ -532,6 +615,12 @@ public class DatabaseManager {
                 pstmt.setNull(7, java.sql.Types.INTEGER);
             }
             
+            if (request.getHospitalId() > 0) {
+                pstmt.setInt(8, request.getHospitalId());
+            } else {
+                throw new SQLException("Hospital ID is required for treatment requests");
+            }
+            
             pstmt.executeUpdate();
         }
     }
@@ -541,10 +630,12 @@ public class DatabaseManager {
         String sql = """
             SELECT tr.*, 
                    p.firstName || ' ' || p.lastName AS patient_name,
-                   d.firstName || ' ' || d.lastName AS doctor_name
+                   d.firstName || ' ' || d.lastName AS doctor_name,
+                   h.name AS hospital_name
             FROM treatment_requests tr
             JOIN patients p ON tr.patient_id = p.id
             LEFT JOIN doctors d ON tr.assigned_doctor_id = d.id
+            LEFT JOIN hospitals h ON tr.hospital_id = h.id
             ORDER BY 
                 CASE 
                     WHEN tr.urgency = 'Emergency' THEN 1
@@ -571,7 +662,9 @@ public class DatabaseManager {
                     rs.getString("symptoms"),
                     rs.getString("status"),
                     rs.getObject("assigned_doctor_id") != null ? rs.getInt("assigned_doctor_id") : 0,
-                    rs.getString("doctor_name")
+                    rs.getString("doctor_name"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0,
+                    rs.getString("hospital_name")
                 );
                 requests.add(request);
             }
@@ -584,10 +677,12 @@ public class DatabaseManager {
         String sql = """
             SELECT tr.*, 
                    p.firstName || ' ' || p.lastName AS patient_name,
-                   d.firstName || ' ' || d.lastName AS doctor_name
+                   d.firstName || ' ' || d.lastName AS doctor_name,
+                   h.name AS hospital_name
             FROM treatment_requests tr
             JOIN patients p ON tr.patient_id = p.id
             LEFT JOIN doctors d ON tr.assigned_doctor_id = d.id
+            LEFT JOIN hospitals h ON tr.hospital_id = h.id
             WHERE tr.urgency = ?
             ORDER BY tr.date_requested DESC
         """;
@@ -608,7 +703,9 @@ public class DatabaseManager {
                     rs.getString("symptoms"),
                     rs.getString("status"),
                     rs.getObject("assigned_doctor_id") != null ? rs.getInt("assigned_doctor_id") : 0,
-                    rs.getString("doctor_name")
+                    rs.getString("doctor_name"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0,
+                    rs.getString("hospital_name")
                 );
                 requests.add(request);
             }
@@ -620,10 +717,12 @@ public class DatabaseManager {
         String sql = """
             SELECT tr.*, 
                    p.firstName || ' ' || p.lastName AS patient_name,
-                   d.firstName || ' ' || d.lastName AS doctor_name
+                   d.firstName || ' ' || d.lastName AS doctor_name,
+                   h.name AS hospital_name
             FROM treatment_requests tr
             JOIN patients p ON tr.patient_id = p.id
             LEFT JOIN doctors d ON tr.assigned_doctor_id = d.id
+            LEFT JOIN hospitals h ON tr.hospital_id = h.id
             WHERE tr.id = ?
         """;
         
@@ -643,7 +742,9 @@ public class DatabaseManager {
                     rs.getString("symptoms"),
                     rs.getString("status"),
                     rs.getObject("assigned_doctor_id") != null ? rs.getInt("assigned_doctor_id") : 0,
-                    rs.getString("doctor_name")
+                    rs.getString("doctor_name"),
+                    rs.getObject("hospital_id") != null ? rs.getInt("hospital_id") : 0,
+                    rs.getString("hospital_name")
                 );
             }
         }
@@ -651,7 +752,10 @@ public class DatabaseManager {
     }
     
     public void updateTreatmentRequest(TreatmentRequest request) throws SQLException {
-        String sql = "UPDATE treatment_requests SET status = ?, assigned_doctor_id = ? WHERE id = ?";
+        String sql = "UPDATE treatment_requests SET status = ?, assigned_doctor_id = ?, hospital_id = ? WHERE id = ?";
+        
+        System.out.println("Updating treatment request: " + request.getId() + " with hospital ID: " + request.getHospitalId());
+        
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, request.getStatus());
@@ -662,7 +766,14 @@ public class DatabaseManager {
                 pstmt.setNull(2, java.sql.Types.INTEGER);
             }
             
-            pstmt.setInt(3, request.getId());
+            if (request.getHospitalId() > 0) {
+                pstmt.setInt(3, request.getHospitalId());
+            } else {
+                throw new SQLException("Hospital ID is required for treatment requests");
+            }
+            
+            pstmt.setInt(4, request.getId());
+            
             pstmt.executeUpdate();
         }
     }
@@ -673,6 +784,20 @@ public class DatabaseManager {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+    
+    public int getTotalPatientsCountByHospital(int hospitalId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM patients WHERE hospital_id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 return rs.getInt(1);
@@ -694,11 +819,39 @@ public class DatabaseManager {
         return 0;
     }
     
+    public int getTotalDoctorsCountByHospital(int hospitalId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM doctors WHERE hospital_id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+    
     public int getPendingTreatmentsCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM treatment_requests WHERE status = 'Pending'";
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+    
+    public int getPendingTreatmentsCountByHospital(int hospitalId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM treatment_requests WHERE status = 'Pending' AND hospital_id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 return rs.getInt(1);
@@ -721,12 +874,49 @@ public class DatabaseManager {
         return distribution;
     }
     
+    public Map<String, Integer> getPatientGenderDistributionByHospital(int hospitalId) throws SQLException {
+        Map<String, Integer> distribution = new HashMap<>();
+        String sql = "SELECT gender, COUNT(*) as count FROM patients WHERE hospital_id = ? GROUP BY gender";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                distribution.put(rs.getString("gender"), rs.getInt("count"));
+            }
+        }
+        return distribution;
+    }
+    
     public Map<String, Integer> getTreatmentUrgencyDistribution() throws SQLException {
         Map<String, Integer> distribution = new HashMap<>();
         String sql = "SELECT urgency, COUNT(*) as count FROM treatment_requests GROUP BY urgency";
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                distribution.put(rs.getString("urgency"), rs.getInt("count"));
+            }
+        }
+        
+        // Ensure all urgency levels are represented
+        if (!distribution.containsKey("Low")) distribution.put("Low", 0);
+        if (!distribution.containsKey("Medium")) distribution.put("Medium", 0);
+        if (!distribution.containsKey("High")) distribution.put("High", 0);
+        if (!distribution.containsKey("Emergency")) distribution.put("Emergency", 0);
+        
+        return distribution;
+    }
+    
+    public Map<String, Integer> getTreatmentUrgencyDistributionByHospital(int hospitalId) throws SQLException {
+        Map<String, Integer> distribution = new HashMap<>();
+        String sql = "SELECT urgency, COUNT(*) as count FROM treatment_requests WHERE hospital_id = ? GROUP BY urgency";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
             
             while (rs.next()) {
                 distribution.put(rs.getString("urgency"), rs.getInt("count"));
@@ -774,10 +964,10 @@ public class DatabaseManager {
                     rs.getString("address"),
                     rs.getString("contactNumber"),
                     rs.getString("email"),
-                    rs.getString("website"),
+                    rs.getString("website") != null ? rs.getString("website") : "",
                     rs.getString("username"),
                     rs.getString("password"),
-                    rs.getString("description")
+                    rs.getString("description") != null ? rs.getString("description") : ""
                 );
             }
         }
@@ -791,19 +981,33 @@ public class DatabaseManager {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             
+            // Debug: Print column names
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            System.out.println("Hospitals table has " + columnCount + " columns:");
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.println(i + ": " + metaData.getColumnName(i));
+            }
+            
             while (rs.next()) {
-                Hospital hospital = new Hospital(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("address"),
-                    rs.getString("contactNumber"),
-                    rs.getString("email"),
-                    rs.getString("website"),
-                    rs.getString("username"),
-                    rs.getString("password"),
-                    rs.getString("description")
-                );
-                hospitals.add(hospital);
+                try {
+                    Hospital hospital = new Hospital(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("address"),
+                        rs.getString("contactNumber"),
+                        rs.getString("email"),
+                        rs.getString("website") != null ? rs.getString("website") : "",
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("description") != null ? rs.getString("description") : ""
+                    );
+                    hospitals.add(hospital);
+                    System.out.println("Loaded hospital: " + hospital.getId() + " - " + hospital.getName());
+                } catch (SQLException e) {
+                    System.err.println("Error loading hospital: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }
         return hospitals;
@@ -823,10 +1027,10 @@ public class DatabaseManager {
                     rs.getString("address"),
                     rs.getString("contactNumber"),
                     rs.getString("email"),
-                    rs.getString("website"),
+                    rs.getString("website") != null ? rs.getString("website") : "",
                     rs.getString("username"),
                     rs.getString("password"),
-                    rs.getString("description")
+                    rs.getString("description") != null ? rs.getString("description") : ""
                 );
             }
         }
@@ -949,10 +1153,10 @@ public class DatabaseManager {
                     rs.getString("address"),
                     rs.getString("contactNumber"),
                     rs.getString("email"),
-                    rs.getString("website"),
+                    rs.getString("website") != null ? rs.getString("website") : "",
                     rs.getString("username"),
                     rs.getString("password"),
-                    rs.getString("description")
+                    rs.getString("description") != null ? rs.getString("description") : ""
                 );
                 hospitals.add(hospital);
             }
@@ -970,5 +1174,140 @@ public class DatabaseManager {
             pstmt.setInt(1, hospitalId);
             pstmt.executeUpdate();
         }
+    }
+
+    public void deletePatient(int patientId) throws SQLException {
+        String sql = "DELETE FROM patients WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, patientId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public List<TreatmentRequest> getTreatmentRequestsByHospital(int hospitalId) throws SQLException {
+        List<TreatmentRequest> requests = new ArrayList<>();
+        String sql = """
+            SELECT tr.*, 
+                   p.firstName || ' ' || p.lastName AS patient_name,
+                   d.firstName || ' ' || d.lastName AS doctor_name,
+                   h.name AS hospital_name
+            FROM treatment_requests tr
+            JOIN patients p ON tr.patient_id = p.id
+            LEFT JOIN doctors d ON tr.assigned_doctor_id = d.id
+            LEFT JOIN hospitals h ON tr.hospital_id = h.id
+            WHERE tr.hospital_id = ?
+            ORDER BY 
+                CASE 
+                    WHEN tr.urgency = 'Emergency' THEN 1
+                    WHEN tr.urgency = 'High' THEN 2
+                    WHEN tr.urgency = 'Medium' THEN 3
+                    WHEN tr.urgency = 'Low' THEN 4
+                    ELSE 5
+                END,
+                tr.date_requested DESC
+        """;
+        
+        System.out.println("Fetching treatment requests for hospital ID: " + hospitalId);
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                try {
+                    TreatmentRequest request = new TreatmentRequest(
+                        rs.getInt("id"),
+                        rs.getInt("patient_id"),
+                        rs.getString("patient_name"),
+                        LocalDate.parse(rs.getString("date_requested")),
+                        LocalDate.parse(rs.getString("preferred_date")),
+                        rs.getString("urgency"),
+                        rs.getString("symptoms"),
+                        rs.getString("status"),
+                        rs.getObject("assigned_doctor_id") != null ? rs.getInt("assigned_doctor_id") : 0,
+                        rs.getString("doctor_name"),
+                        hospitalId,
+                        rs.getString("hospital_name")
+                    );
+                    requests.add(request);
+                    System.out.println("Found request: " + request.getId() + " for hospital: " + hospitalId);
+                } catch (Exception e) {
+                    System.err.println("Error parsing treatment request: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        System.out.println("Total requests found for hospital " + hospitalId + ": " + requests.size());
+        return requests;
+    }
+
+    public List<Doctor> getDoctorsByHospital(int hospitalId) throws SQLException {
+        List<Doctor> doctors = new ArrayList<>();
+        String sql = "SELECT * FROM doctors WHERE hospital_id = ?";
+        
+        System.out.println("Fetching doctors for hospital ID: " + hospitalId);
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Doctor doctor = new Doctor();
+                doctor.setId(rs.getInt("id"));
+                doctor.setFirstName(rs.getString("firstName"));
+                doctor.setLastName(rs.getString("lastName"));
+                doctor.setEmail(rs.getString("email"));
+                doctor.setPassword(rs.getString("password"));
+                doctor.setContactNumber(rs.getString("contactNumber"));
+                doctor.setSpecialization(rs.getString("specialization"));
+                doctor.setUsername(rs.getString("username"));
+                doctor.setHospitalId(rs.getInt("hospital_id"));
+                doctors.add(doctor);
+                System.out.println("Found doctor: " + doctor.getId() + " for hospital: " + hospitalId);
+            }
+        }
+        
+        System.out.println("Total doctors found for hospital " + hospitalId + ": " + doctors.size());
+        return doctors;
+    }
+    
+    public List<Patient> getPatientsByHospital(int hospitalId) throws SQLException {
+        List<Patient> patients = new ArrayList<>();
+        String sql = "SELECT * FROM patients WHERE hospital_id = ?";
+        
+        System.out.println("Fetching patients for hospital ID: " + hospitalId);
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Patient patient = new Patient(
+                    rs.getInt("id"),
+                    rs.getString("firstName"),
+                    rs.getString("lastName"),
+                    LocalDate.parse(rs.getString("dateOfBirth")),
+                    rs.getString("gender"),
+                    rs.getString("contactNumber"),
+                    rs.getString("address"),
+                    rs.getString("medicalHistory"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    hospitalId
+                );
+                patients.add(patient);
+                System.out.println("Found patient: " + patient.getId() + " for hospital: " + hospitalId);
+            }
+        }
+        
+        System.out.println("Total patients found for hospital " + hospitalId + ": " + patients.size());
+        return patients;
     }
 } 

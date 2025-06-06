@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="com.hospital.controllers.TreatmentRequestFormController"
+      spacing="15" style="-fx-background-color: white; -fx-padding: 20;">
+    
+    <Label text="New Treatment Request" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
+        <font>
+            <Font name="System Bold" size="24" />
+        </font>
+    </Label>
+    
+    <Separator style="-fx-opacity: 0.3;" />
+    
+    <GridPane hgap="15" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints minWidth="120" prefWidth="150" />
+            <ColumnConstraints minWidth="200" prefWidth="350" hgrow="ALWAYS" />
+        </columnConstraints>
+        
+        <!-- Select Hospital -->
+        <Label text="Select Hospital" style="-fx-text-fill: #7F8C8D;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <ComboBox fx:id="hospitalComboBox" promptText="Select a hospital" 
+                 GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+        
+        <!-- Preferred Date -->
+        <Label text="Preferred Date" style="-fx-text-fill: #7F8C8D;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <DatePicker fx:id="preferredDatePicker" promptText="Select date" 
+                   GridPane.columnIndex="1" GridPane.rowIndex="1" 
+                   style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+        
+        <!-- Urgency -->
+        <Label text="Urgency Level" style="-fx-text-fill: #7F8C8D;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <ComboBox fx:id="urgencyComboBox" promptText="Select urgency level" 
+                 GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+        
+        <!-- Symptoms -->
+        <Label text="Symptoms" style="-fx-text-fill: #7F8C8D;" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.valignment="TOP" />
+        <TextArea fx:id="symptomsTextArea" wrapText="true" promptText="Describe your symptoms" prefHeight="150"
+                 GridPane.columnIndex="1" GridPane.rowIndex="3" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+    </GridPane>
+    
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancel" onAction="#handleCancel"
+                style="-fx-background-color: #E0E0E0; -fx-text-fill: #333333; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+            <font>
+                <Font size="12" />
+            </font>
+        </Button>
+        <Button text="Submit Request" onAction="#handleSubmit"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Button>
+    </HBox>
+</VBox> 

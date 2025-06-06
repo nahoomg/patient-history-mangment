@@ -1,6 +1,7 @@
 package com.hospital.controllers;
 
 import com.hospital.Main;
+import com.hospital.models.Hospital;
 import com.hospital.models.Patient;
 import com.hospital.models.TreatmentRequest;
 import com.hospital.utils.DatabaseManager;
@@ -18,8 +19,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.Optional;
+import java.util.List;
 import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
+import javafx.util.StringConverter;
 
 public class PatientDashboardController implements Initializable {
     @FXML private Label welcomeLabel;
@@ -33,6 +36,7 @@ public class PatientDashboardController implements Initializable {
     @FXML private TextArea symptomsArea;
     @FXML private DatePicker preferredDatePicker;
     @FXML private ComboBox<String> urgencyComboBox;
+    @FXML private ComboBox<Hospital> hospitalComboBox;
     @FXML private Label treatmentMessageLabel;
     
     private Patient currentPatient;
@@ -44,6 +48,63 @@ public class PatientDashboardController implements Initializable {
         preferredDatePicker.setValue(LocalDate.now().plusDays(1));
         urgencyComboBox.getItems().addAll("Low", "Medium", "High", "Emergency");
         urgencyComboBox.setValue("Medium");
+        
+        // Load hospitals into the combo box
+        loadHospitals();
+        
+        // Load patient data from session
+        try {
+            currentPatient = (Patient) com.hospital.utils.Session.getInstance().getCurrentUser();
+            if (currentPatient != null) {
+                setPatient(currentPatient);
+                System.out.println("Patient data loaded from session: " + currentPatient.getFirstName() + " " + currentPatient.getLastName());
+            } else {
+                System.err.println("No patient data found in session");
+                showTreatmentMessage("Error: No patient data found", true);
+            }
+        } catch (ClassCastException e) {
+            System.err.println("Error casting session data to Patient: " + e.getMessage());
+            showTreatmentMessage("Error loading patient data", true);
+        }
+    }
+    
+    private void loadHospitals() {
+        try {
+            List<Hospital> hospitals = dbManager.getAllHospitals();
+            hospitalComboBox.getItems().clear();
+            hospitalComboBox.getItems().addAll(hospitals);
+            
+            // Set up a custom cell factory to display hospital names
+            hospitalComboBox.setCellFactory(param -> new ListCell<Hospital>() {
+                @Override
+                protected void updateItem(Hospital hospital, boolean empty) {
+                    super.updateItem(hospital, empty);
+                    if (empty || hospital == null) {
+                        setText(null);
+                    } else {
+                        setText(hospital.getName());
+                    }
+                }
+            });
+            
+            // Set up a custom button cell to display the selected hospital name
+            hospitalComboBox.setButtonCell(new ListCell<Hospital>() {
+                @Override
+                protected void updateItem(Hospital hospital, boolean empty) {
+                    super.updateItem(hospital, empty);
+                    if (empty || hospital == null) {
+                        setText(null);
+                    } else {
+                        setText(hospital.getName());
+                    }
+                }
+            });
+            
+            System.out.println("Loaded " + hospitals.size() + " hospitals into combo box");
+        } catch (SQLException e) {
+            System.err.println("Error loading hospitals: " + e.getMessage());
+            showTreatmentMessage("Error loading hospitals", true);
+        }
     }
 
     public void setPatient(Patient patient) {
@@ -155,49 +216,70 @@ public class PatientDashboardController implements Initializable {
 
     @FXML
     private void handleTreatmentRequest() {
-        if (symptomsArea.getText().isEmpty()) {
+        // Validate inputs
+        if (symptomsArea.getText().trim().isEmpty()) {
             showTreatmentMessage("Please describe your symptoms", true);
             return;
         }
-
+        
+        if (hospitalComboBox.getValue() == null) {
+            showTreatmentMessage("Please select a hospital", true);
+            return;
+        }
+        
+        if (preferredDatePicker.getValue() == null) {
+            showTreatmentMessage("Please select a preferred date", true);
+            return;
+        }
+        
+        // Create treatment request
         try {
-            // Create a treatment request entry
             TreatmentRequest request = new TreatmentRequest();
             request.setPatientId(currentPatient.getId());
             request.setPatientName(currentPatient.getFirstName() + " " + currentPatient.getLastName());
             request.setDateRequested(LocalDate.now());
             request.setPreferredDate(preferredDatePicker.getValue());
             request.setUrgency(urgencyComboBox.getValue());
-            request.setSymptoms(symptomsArea.getText());
+            request.setSymptoms(symptomsArea.getText().trim());
             request.setStatus("Pending");
+            
+            // Set hospital information
+            Hospital selectedHospital = hospitalComboBox.getValue();
+            request.setHospitalId(selectedHospital.getId());
+            request.setHospitalName(selectedHospital.getName());
+            
+            System.out.println("Creating treatment request for hospital: " + selectedHospital.getName() + " (ID: " + selectedHospital.getId() + ")");
             
             // Save to database
             dbManager.addTreatmentRequest(request);
             
-            // Also update medical history for patient's records
-            String treatmentRequest = "Date: " + LocalDate.now() + "\n" +
-                                      "Preferred Date: " + preferredDatePicker.getValue() + "\n" +
-                                      "Urgency: " + urgencyComboBox.getValue() + "\n" +
-                                      "Symptoms: " + symptomsArea.getText() + "\n\n";
+            // Update patient's medical history
+            String historyUpdate = "\n--- TREATMENT REQUEST SUBMITTED ---\n" +
+                                  "Date: " + LocalDate.now() + "\n" +
+                                  "Hospital: " + selectedHospital.getName() + "\n" +
+                                  "Preferred Date: " + preferredDatePicker.getValue() + "\n" +
+                                  "Urgency: " + urgencyComboBox.getValue() + "\n" +
+                                  "Symptoms: " + symptomsArea.getText().trim() + "\n\n";
             
-            // Append to medical history
-            String updatedHistory = currentPatient.getMedicalHistory() + "\n--- NEW TREATMENT REQUEST ---\n" + treatmentRequest;
-            currentPatient.setMedicalHistory(updatedHistory);
+            String currentHistory = currentPatient.getMedicalHistory();
+            if (currentHistory == null) currentHistory = "";
+            dbManager.updatePatientMedicalHistory(currentPatient.getId(), currentHistory + historyUpdate);
             
-            // Update in database
-            dbManager.updatePatientHistory(currentPatient.getId(), updatedHistory);
+            // Update the medical history in the UI
+            currentPatient.setMedicalHistory(currentHistory + historyUpdate);
+            medicalHistoryArea.setText(currentPatient.getMedicalHistory());
             
-            // Update the medical history display
-            medicalHistoryArea.setText(updatedHistory);
-            
-            // Clear the form
+            // Clear form and show success message
             symptomsArea.clear();
             preferredDatePicker.setValue(LocalDate.now().plusDays(1));
             urgencyComboBox.setValue("Medium");
+            hospitalComboBox.setValue(null);
             
             showTreatmentMessage("Treatment request submitted successfully", false);
+            
         } catch (SQLException e) {
             showTreatmentMessage("Error submitting treatment request: " + e.getMessage(), true);
+            e.printStackTrace();
         }
     }
 

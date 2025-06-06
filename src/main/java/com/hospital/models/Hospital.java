@@ -14,6 +14,18 @@ public class Hospital {
     private final SimpleStringProperty password;
     private final SimpleStringProperty description;
 
+    public Hospital() {
+        this.id = new SimpleIntegerProperty(0);
+        this.name = new SimpleStringProperty("");
+        this.address = new SimpleStringProperty("");
+        this.contactNumber = new SimpleStringProperty("");
+        this.email = new SimpleStringProperty("");
+        this.website = new SimpleStringProperty("");
+        this.username = new SimpleStringProperty("");
+        this.password = new SimpleStringProperty("");
+        this.description = new SimpleStringProperty("");
+    }
+
     public Hospital(int id, String name, String address, String contactNumber, String email, 
                    String website, String username, String password, String description) {
         this.id = new SimpleIntegerProperty(id);

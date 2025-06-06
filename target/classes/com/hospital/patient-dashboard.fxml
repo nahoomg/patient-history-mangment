@@ -134,6 +134,14 @@
                                               style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" />
                                 </VBox>
                                 
+                                <!-- Hospital Selection -->
+                                <VBox spacing="5">
+                                    <Label text="Select Hospital" style="-fx-text-fill: #7F8C8D; -fx-font-size: 12px;" />
+                                    <ComboBox fx:id="hospitalComboBox" promptText="Select a hospital" 
+                                             style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"
+                                             maxWidth="Infinity" />
+                                </VBox>
+                                
                                 <HBox spacing="30">
                                     <!-- Preferred Date -->
                                     <VBox spacing="5" HBox.hgrow="ALWAYS">

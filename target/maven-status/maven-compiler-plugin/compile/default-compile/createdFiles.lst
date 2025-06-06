@@ -1,5 +1,4 @@
 com\hospital\controllers\AdminFormController.class
-com\hospital\controllers\AdminDashboardController$1.class
 com\hospital\controllers\RegistrationChoiceController.class
 com\hospital\utils\DatabaseManager.class
 com\hospital\controllers\PatientDashboardController.class
@@ -10,13 +9,18 @@ com\hospital\controllers\LoginController.class
 com\hospital\models\Hospital.class
 com\hospital\models\Admin.class
 com\hospital\controllers\AdminDashboardController.class
+com\hospital\controllers\PatientDashboardController$1.class
 com\hospital\models\ActivityLog.class
 com\hospital\models\Patient.class
+com\hospital\controllers\TreatmentRequestFormController$2.class
 com\hospital\controllers\DoctorFormController.class
-com\hospital\controllers\AdminDashboardController$2.class
 com\hospital\Main.class
+com\hospital\controllers\PatientDashboardController$2.class
 com\hospital\controllers\PatientRegistrationController.class
 com\hospital\models\TreatmentRequest.class
+com\hospital\controllers\PatientFormController.class
 com\hospital\controllers\HospitalDashboardController.class
 com\hospital\controllers\DoctorDashboardController.class
+com\hospital\controllers\TreatmentRequestFormController$1.class
+com\hospital\controllers\TreatmentRequestFormController.class
 com\hospital\models\Doctor.class

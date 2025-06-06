@@ -149,10 +149,10 @@ public class HospitalDashboardController implements Initializable {
     
     private void loadStatistics() {
         try {
-            // Get actual counts from database
-            int doctorCount = dbManager.getTotalDoctorsCount();
-            int patientCount = dbManager.getTotalPatientsCount();
-            int pendingTreatmentCount = dbManager.getPendingTreatmentsCount();
+            // Get counts for this hospital only
+            int doctorCount = dbManager.getTotalDoctorsCountByHospital(hospital.getId());
+            int patientCount = dbManager.getTotalPatientsCountByHospital(hospital.getId());
+            int pendingTreatmentCount = dbManager.getPendingTreatmentsCountByHospital(hospital.getId());
             
             totalDoctorsLabel.setText(String.valueOf(doctorCount));
             totalPatientsLabel.setText(String.valueOf(patientCount));
@@ -174,7 +174,7 @@ public class HospitalDashboardController implements Initializable {
     
     private void loadGenderDistributionChart() {
         try {
-            Map<String, Integer> genderDistribution = dbManager.getPatientGenderDistribution();
+            Map<String, Integer> genderDistribution = dbManager.getPatientGenderDistributionByHospital(hospital.getId());
             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
             
             genderDistribution.forEach((gender, count) -> {
@@ -190,7 +190,7 @@ public class HospitalDashboardController implements Initializable {
     
     private void loadTreatmentUrgencyChart() {
         try {
-            Map<String, Integer> urgencyDistribution = dbManager.getTreatmentUrgencyDistribution();
+            Map<String, Integer> urgencyDistribution = dbManager.getTreatmentUrgencyDistributionByHospital(hospital.getId());
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName("Treatment Requests");
             
@@ -223,7 +223,8 @@ public class HospitalDashboardController implements Initializable {
     
     private void loadDoctorsData() {
         try {
-            List<Doctor> doctorList = dbManager.getAllDoctors();
+            // Only load doctors for this hospital
+            List<Doctor> doctorList = dbManager.getDoctorsByHospital(hospital.getId());
             doctors.clear();
             doctors.addAll(doctorList);
             doctorsTable.setItems(doctors);
@@ -260,7 +261,8 @@ public class HospitalDashboardController implements Initializable {
     
     private void loadPatientsData() {
         try {
-            List<Patient> patientList = dbManager.getAllPatients();
+            // Only load patients for this hospital
+            List<Patient> patientList = dbManager.getPatientsByHospital(hospital.getId());
             patients.clear();
             patients.addAll(patientList);
             patientsTable.setItems(patients);
@@ -284,23 +286,24 @@ public class HospitalDashboardController implements Initializable {
     }
     
     private void initializeTreatmentRequestsTable() {
-        // Initialize filters
-        if (urgencyFilterComboBox != null) {
-            urgencyFilterComboBox.getItems().addAll("All", "Low", "Medium", "High", "Emergency");
+        if (treatmentRequestsTable != null) {
+            // Initialize columns
+            treatmentIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+            patientNameColumn.setCellValueFactory(new PropertyValueFactory<>("patientName"));
+            dateRequestedColumn.setCellValueFactory(new PropertyValueFactory<>("dateRequested"));
+            preferredDateColumn.setCellValueFactory(new PropertyValueFactory<>("preferredDate"));
+            urgencyColumn.setCellValueFactory(new PropertyValueFactory<>("urgency"));
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+            assignedDoctorColumn.setCellValueFactory(new PropertyValueFactory<>("assignedDoctorName"));
+            
+            // Set up filters
+            urgencyFilterComboBox.getItems().addAll("All", "Emergency", "High", "Medium", "Low");
             urgencyFilterComboBox.setValue("All");
-        }
-        
-        if (statusFilterComboBox != null) {
+            urgencyFilterComboBox.setOnAction(e -> filterTreatmentRequests());
+            
             statusFilterComboBox.getItems().addAll("All", "Pending", "Assigned", "In Progress", "Completed", "Cancelled");
             statusFilterComboBox.setValue("All");
-        }
-        
-        // Initialize table columns
-        if (treatmentIdColumn != null) treatmentIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        
-        // Load treatment requests data
-        if (treatmentRequestsTable != null) {
-            loadTreatmentRequestsData();
+            statusFilterComboBox.setOnAction(e -> filterTreatmentRequests());
             
             // Add selection listener
             treatmentRequestsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -310,12 +313,52 @@ public class HospitalDashboardController implements Initializable {
                     treatmentDetailsPane.setVisible(false);
                 }
             });
+            
+            // Load treatment data
+            loadTreatmentRequestsData();
+        }
+    }
+    
+    private void filterTreatmentRequests() {
+        try {
+            // Get the selected filters
+            String urgencyFilter = urgencyFilterComboBox.getValue();
+            String statusFilter = statusFilterComboBox.getValue();
+            
+            // Load all treatment requests for this hospital
+            List<TreatmentRequest> allRequests = dbManager.getTreatmentRequestsByHospital(hospital.getId());
+            
+            // Apply filters
+            List<TreatmentRequest> filteredRequests = allRequests;
+            
+            // Filter by urgency if not "All"
+            if (!"All".equals(urgencyFilter)) {
+                filteredRequests = filteredRequests.stream()
+                    .filter(request -> request.getUrgency().equals(urgencyFilter))
+                    .toList();
+            }
+            
+            // Filter by status if not "All"
+            if (!"All".equals(statusFilter)) {
+                filteredRequests = filteredRequests.stream()
+                    .filter(request -> request.getStatus().equals(statusFilter))
+                    .toList();
+            }
+            
+            // Update table
+            treatmentRequests.clear();
+            treatmentRequests.addAll(filteredRequests);
+            
+        } catch (SQLException e) {
+            System.err.println("Error filtering treatment requests: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
     private void loadTreatmentRequestsData() {
         try {
-            List<TreatmentRequest> requestList = dbManager.getAllTreatmentRequests();
+            // Only load treatment requests for this hospital
+            List<TreatmentRequest> requestList = dbManager.getTreatmentRequestsByHospital(hospital.getId());
             treatmentRequests.clear();
             treatmentRequests.addAll(requestList);
             treatmentRequestsTable.setItems(treatmentRequests);
@@ -336,8 +379,8 @@ public class HospitalDashboardController implements Initializable {
             // Set symptoms
             symptomsTextArea.setText(request.getSymptoms());
             
-            // Load doctor assignment combo
-            List<Doctor> doctorList = dbManager.getAllDoctors();
+            // Load doctor assignment combo - only load doctors from this hospital
+            List<Doctor> doctorList = dbManager.getDoctorsByHospital(hospital.getId());
             doctorAssignmentComboBox.getItems().clear();
             doctorAssignmentComboBox.getItems().addAll(doctorList);
             
@@ -507,24 +550,64 @@ public class HospitalDashboardController implements Initializable {
             return;
         }
         
-        Doctor assignedDoctor = doctorAssignmentComboBox.getValue();
-        String status = statusComboBox.getValue();
+        Doctor selectedDoctor = doctorAssignmentComboBox.getValue();
+        String selectedStatus = statusComboBox.getValue();
         
-        if (status == null) {
+        if (selectedStatus == null) {
             showAlert(Alert.AlertType.WARNING, "Warning", "Please select a status.");
             return;
         }
         
         try {
-            selectedRequest.setStatus(status);
-            selectedRequest.setAssignedDoctorId(assignedDoctor != null ? assignedDoctor.getId() : null);
+            // Update request with doctor and status
+            selectedRequest.setStatus(selectedStatus);
             
+            if (selectedDoctor != null) {
+                selectedRequest.setAssignedDoctorId(selectedDoctor.getId());
+                selectedRequest.setAssignedDoctorName(selectedDoctor.getFirstName() + " " + selectedDoctor.getLastName());
+            } else {
+                selectedRequest.setAssignedDoctorId(0);
+                selectedRequest.setAssignedDoctorName(null);
+            }
+            
+            // Make sure the hospital ID is set correctly
+            selectedRequest.setHospitalId(hospital.getId());
+            selectedRequest.setHospitalName(hospital.getName());
+            
+            // Update in database
             dbManager.updateTreatmentRequest(selectedRequest);
             
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Treatment request updated successfully.");
+            // Update patient's medical history
+            try {
+                Patient patient = dbManager.getPatientById(selectedRequest.getPatientId());
+                if (patient != null) {
+                    StringBuilder historyUpdate = new StringBuilder();
+                    historyUpdate.append("\n--- TREATMENT REQUEST UPDATED ---\n");
+                    historyUpdate.append("Date: ").append(LocalDate.now()).append("\n");
+                    historyUpdate.append("Hospital: ").append(hospital.getName()).append("\n");
+                    historyUpdate.append("Status: ").append(selectedStatus).append("\n");
+                    
+                    if (selectedDoctor != null) {
+                        historyUpdate.append("Assigned Doctor: ").append(selectedDoctor.getFirstName())
+                                    .append(" ").append(selectedDoctor.getLastName())
+                                    .append(" (").append(selectedDoctor.getSpecialization()).append(")\n");
+                    }
+                    
+                    historyUpdate.append("\n");
+                    
+                    String currentHistory = patient.getMedicalHistory();
+                    if (currentHistory == null) currentHistory = "";
+                    
+                    dbManager.updatePatientMedicalHistory(patient.getId(), currentHistory + historyUpdate.toString());
+                }
+            } catch (SQLException e) {
+                System.err.println("Warning: Could not update patient medical history: " + e.getMessage());
+            }
+            
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Treatment assignment updated successfully.");
             loadTreatmentRequestsData();
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to update treatment request: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to update treatment assignment: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -13,6 +13,7 @@ public class Patient {
     private String medicalHistory;
     private String username;
     private String password;
+    private int hospitalId;
 
     public Patient() {}
 
@@ -35,6 +36,14 @@ public class Patient {
         this(id, firstName, lastName, dateOfBirth, gender, contactNumber, address, medicalHistory);
         this.username = username;
         this.password = password;
+    }
+    
+    // Constructor with all fields including hospitalId
+    public Patient(int id, String firstName, String lastName, LocalDate dateOfBirth, 
+                  String gender, String contactNumber, String address, String medicalHistory,
+                  String username, String password, int hospitalId) {
+        this(id, firstName, lastName, dateOfBirth, gender, contactNumber, address, medicalHistory, username, password);
+        this.hospitalId = hospitalId;
     }
 
     // Getters and Setters
@@ -67,6 +76,9 @@ public class Patient {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    public int getHospitalId() { return hospitalId; }
+    public void setHospitalId(int hospitalId) { this.hospitalId = hospitalId; }
 
     @Override
     public String toString() {

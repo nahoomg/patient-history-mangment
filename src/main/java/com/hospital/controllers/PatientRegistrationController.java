@@ -107,6 +107,20 @@ public class PatientRegistrationController implements Initializable {
                     showMessage("Passwords do not match", true);
                     return false;
                 }
+                
+                // Check if username already exists
+                try {
+                    String username = usernameField.getText().trim();
+                    if (dbManager.isUsernameExists(username)) {
+                        showMessage("Username already exists. Please choose a different username.", true);
+                        usernameField.requestFocus();
+                        return false;
+                    }
+                } catch (SQLException e) {
+                    showMessage("Error checking username availability: " + e.getMessage(), true);
+                    return false;
+                }
+                
                 return true;
                 
             default:
@@ -142,6 +156,16 @@ public class PatientRegistrationController implements Initializable {
     private void handleRegister() {
         if (validateAllInputs()) {
             try {
+                // Check if username already exists
+                String username = usernameField.getText().trim();
+                if (dbManager.isUsernameExists(username)) {
+                    showMessage("Username already exists. Please choose a different username.", true);
+                    // Select the account information tab
+                    registrationTabPane.getSelectionModel().select(3);
+                    usernameField.requestFocus();
+                    return;
+                }
+                
                 Patient patient = new Patient(
                     0, // ID will be set by database
                     firstNameField.getText(),
@@ -151,7 +175,7 @@ public class PatientRegistrationController implements Initializable {
                     contactNumberField.getText(),
                     addressField.getText(),
                     medicalHistoryField.getText(),
-                    usernameField.getText(),
+                    username,
                     passwordField.getText()
                 );
 

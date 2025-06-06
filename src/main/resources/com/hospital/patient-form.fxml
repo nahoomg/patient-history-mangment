@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.hospital.controllers.PatientFormController"
+      spacing="15" style="-fx-background-color: white; -fx-padding: 20;">
+    
+    <Label text="Patient Information" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #3F51B5;">
+        <font>
+            <Font name="System Bold" size="20" />
+        </font>
+        <VBox.margin>
+            <Insets bottom="10" />
+        </VBox.margin>
+    </Label>
+    
+    <Separator style="-fx-opacity: 0.3;" />
+    
+    <GridPane hgap="15" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints minWidth="120" prefWidth="150" />
+            <ColumnConstraints minWidth="200" prefWidth="350" hgrow="ALWAYS" />
+        </columnConstraints>
+        
+        <!-- First Name -->
+        <Label text="First Name *" GridPane.columnIndex="0" GridPane.rowIndex="0" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextField fx:id="firstNameField" promptText="Enter first name" GridPane.columnIndex="1" GridPane.rowIndex="0" 
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Last Name -->
+        <Label text="Last Name *" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextField fx:id="lastNameField" promptText="Enter last name" GridPane.columnIndex="1" GridPane.rowIndex="1" 
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Date of Birth -->
+        <Label text="Date of Birth *" GridPane.columnIndex="0" GridPane.rowIndex="2" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <DatePicker fx:id="dobPicker" promptText="Select date of birth" GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                   style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Gender -->
+        <Label text="Gender *" GridPane.columnIndex="0" GridPane.rowIndex="3" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <ComboBox fx:id="genderComboBox" promptText="Select gender" GridPane.columnIndex="1" GridPane.rowIndex="3" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;" maxWidth="Infinity"/>
+        
+        <!-- Contact Number -->
+        <Label text="Contact Number *" GridPane.columnIndex="0" GridPane.rowIndex="4" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextField fx:id="contactField" promptText="Enter contact number" GridPane.columnIndex="1" GridPane.rowIndex="4" 
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Address -->
+        <Label text="Address" GridPane.columnIndex="0" GridPane.rowIndex="5" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextArea fx:id="addressField" promptText="Enter address" wrapText="true" prefHeight="80" 
+                 GridPane.columnIndex="1" GridPane.rowIndex="5" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Medical History -->
+        <Label text="Medical History" GridPane.columnIndex="0" GridPane.rowIndex="6" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextArea fx:id="medicalHistoryField" promptText="Enter medical history" wrapText="true" prefHeight="100" 
+                 GridPane.columnIndex="1" GridPane.rowIndex="6" 
+                 style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Username -->
+        <Label text="Username *" GridPane.columnIndex="0" GridPane.rowIndex="7" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <TextField fx:id="usernameField" promptText="Enter username" GridPane.columnIndex="1" GridPane.rowIndex="7" 
+                  style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Password -->
+        <Label text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="8" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <PasswordField fx:id="passwordField" promptText="Enter password" GridPane.columnIndex="1" GridPane.rowIndex="8" 
+                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+        
+        <!-- Confirm Password -->
+        <Label text="Confirm Password *" GridPane.columnIndex="0" GridPane.rowIndex="9" 
+               style="-fx-text-fill: #555555; -fx-font-weight: bold;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Label>
+        <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" GridPane.columnIndex="1" GridPane.rowIndex="9" 
+                      style="-fx-background-color: #f8f9fa; -fx-border-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
+    </GridPane>
+    
+    <Label text="* Required fields" style="-fx-text-fill: #999999; -fx-font-style: italic;">
+        <VBox.margin>
+            <Insets top="10" />
+        </VBox.margin>
+    </Label>
+    
+    <Label fx:id="errorMessageLabel" style="-fx-text-fill: #E74C3C; -fx-font-weight: bold;" visible="false">
+        <font>
+            <Font name="System Bold" size="12" />
+        </font>
+    </Label>
+    
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancel" onAction="#handleCancel" 
+                style="-fx-background-color: #ECF0F1; -fx-text-fill: #7F8C8D; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+            <font>
+                <Font size="12" />
+            </font>
+        </Button>
+        <Button text="Save Patient" onAction="#handleSave" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+            <font>
+                <Font name="System Bold" size="12" />
+            </font>
+        </Button>
+        <VBox.margin>
+            <Insets top="15" />
+        </VBox.margin>
+    </HBox>
+</VBox> 
