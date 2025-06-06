@@ -16,6 +16,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,6 +25,10 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.Label;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -101,7 +106,6 @@ public class AdminDashboardController implements Initializable {
 
     // Hospital management elements
     @FXML private Label totalHospitalsLabel;
-    @FXML private PieChart hospitalRegionChart;
     @FXML private TableView<Hospital> hospitalsTable;
     @FXML private TableColumn<Hospital, String> hospitalIdColumn;
     @FXML private TableColumn<Hospital, String> hospitalNameColumn;
@@ -400,7 +404,6 @@ public class AdminDashboardController implements Initializable {
             // Load statistics for dashboard
             totalPatientsLabel.setText(String.valueOf(dbManager.getTotalPatientsCount()));
             totalDoctorsLabel.setText(String.valueOf(dbManager.getTotalDoctorsCount()));
-            // pendingTreatmentsLabel.setText(String.valueOf(dbManager.getPendingTreatmentsCount()));
             
             // Add hospital count
             if (totalHospitalsLabel != null) {
@@ -409,6 +412,12 @@ public class AdminDashboardController implements Initializable {
             
             // Load gender distribution chart
             genderDistributionChart.getData().clear();
+            
+            // Make sure the chart is visible and not animated for better display
+            genderDistributionChart.setAnimated(false);
+            genderDistributionChart.setLegendVisible(false);
+            genderDistributionChart.setLabelsVisible(false);
+            
             Map<String, Integer> genderDistribution = dbManager.getPatientGenderDistribution();
             
             // Initialize counters
@@ -417,25 +426,41 @@ public class AdminDashboardController implements Initializable {
             int otherCount = 0;
             int totalCount = 0;
             
+            // Create data for the chart in specific order to match colors
+            PieChart.Data maleData = null;
+            PieChart.Data femaleData = null;
+            PieChart.Data otherData = null;
+            
             // Process gender distribution data
             for (Map.Entry<String, Integer> entry : genderDistribution.entrySet()) {
                 String gender = entry.getKey();
                 int count = entry.getValue();
                 
-                // Add to pie chart
-                PieChart.Data pieData = new PieChart.Data(gender, count);
-                genderDistributionChart.getData().add(pieData);
-                
                 // Update counters
                 if ("Male".equalsIgnoreCase(gender)) {
                     maleCount = count;
+                    maleData = new PieChart.Data("Male", count);
                 } else if ("Female".equalsIgnoreCase(gender)) {
                     femaleCount = count;
+                    femaleData = new PieChart.Data("Female", count);
                 } else {
                     otherCount += count;
+                    otherData = new PieChart.Data("Other", count);
                 }
                 
                 totalCount += count;
+            }
+            
+            // Add data in specific order to ensure color consistency
+            if (maleData != null) genderDistributionChart.getData().add(maleData);
+            if (femaleData != null) genderDistributionChart.getData().add(femaleData);
+            if (otherData != null) genderDistributionChart.getData().add(otherData);
+            
+            // If no data was found, add placeholder data
+            if (genderDistributionChart.getData().isEmpty()) {
+                genderDistributionChart.getData().add(new PieChart.Data("Male", 1));
+                genderDistributionChart.getData().add(new PieChart.Data("Female", 1));
+                genderDistributionChart.getData().add(new PieChart.Data("Other", 1));
             }
             
             // Update labels with counts
@@ -447,59 +472,66 @@ public class AdminDashboardController implements Initializable {
             // Store final value for use in lambda expressions
             final int finalTotalCount = totalCount;
             
-            // Apply colors to pie chart slices and add tooltips
-            int colorIndex = 0;
-            String[] colors = {"#4CAF50", "#2196F3", "#FF9800"};
-            for (PieChart.Data data : genderDistributionChart.getData()) {
-                // Apply color
-                if (colorIndex < colors.length) {
-                    final int index = colorIndex++;
-                    
-                    // We need to use a listener because the node is created later
-                    data.nodeProperty().addListener((obs, oldNode, newNode) -> {
-                        if (newNode != null) {
-                            // Apply color
-                            newNode.setStyle("-fx-pie-color: " + colors[index] + ";");
-                            
-                            // Add tooltip with count and percentage
-                            final String gender = data.getName();
-                            final int count = (int) data.getPieValue();
-                            final double percentage = (finalTotalCount > 0) ? (count * 100.0 / finalTotalCount) : 0;
-                            
-                            // Create tooltip with formatted percentage
-                            Tooltip tooltip = new Tooltip(
-                                String.format("%s: %d (%.1f%%)", gender, count, percentage)
-                            );
-                            
-                            // Install tooltip
-                            Tooltip.install(newNode, tooltip);
-                        }
-                    });
-                }
-            }
+            // Define exact colors that match the labels in the sidebar
+            final String MALE_COLOR = "#4CAF50";    // Green - matches the rectangle in the Male HBox
+            final String FEMALE_COLOR = "#2196F3";  // Blue - matches the rectangle in the Female HBox
+            final String OTHER_COLOR = "#FF9800";   // Orange - matches the rectangle in the Other HBox
             
-            // Load hospital region chart if available
-            if (hospitalRegionChart != null) {
-                hospitalRegionChart.getData().clear();
-                Map<String, Integer> regionDistribution = dbManager.getHospitalRegionDistribution();
-                if (regionDistribution != null && !regionDistribution.isEmpty()) {
-                    for (Map.Entry<String, Integer> entry : regionDistribution.entrySet()) {
-                        hospitalRegionChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            // Apply colors directly to the chart slices
+            Platform.runLater(() -> {
+                int index = 0;
+                for (PieChart.Data data : genderDistributionChart.getData()) {
+                    String color;
+                    
+                    // Assign color based on index to ensure consistency
+                    switch (index) {
+                        case 0: // Male
+                            color = MALE_COLOR;
+                            break;
+                        case 1: // Female
+                            color = FEMALE_COLOR;
+                            break;
+                        case 2: // Other
+                            color = OTHER_COLOR;
+                            break;
+                        default:
+                            color = "#999999"; // Default gray
+                            break;
                     }
-                } else {
-                    // Add placeholder data if no regions are defined
-                    hospitalRegionChart.getData().add(new PieChart.Data("Urban", 3));
-                    hospitalRegionChart.getData().add(new PieChart.Data("Suburban", 2));
-                    hospitalRegionChart.getData().add(new PieChart.Data("Rural", 1));
+                    
+                    // Apply color directly to the node
+                    if (data.getNode() != null) {
+                        data.getNode().setStyle("-fx-pie-color: " + color + ";");
+                        
+                        // Add tooltip with count and percentage
+                        final String genderName = data.getName();
+                        final int count = (int) data.getPieValue();
+                        final double percentage = (finalTotalCount > 0) ? (count * 100.0 / finalTotalCount) : 0;
+                        
+                        // Create tooltip with formatted percentage
+                        Tooltip tooltip = new Tooltip(
+                            String.format("%s: %d (%.1f%%)", genderName, count, percentage)
+                        );
+                        
+                        // Install tooltip
+                        Tooltip.install(data.getNode(), tooltip);
+                    }
+                    
+                    index++;
                 }
-            }
+            });
             
             // Load treatment urgency chart
             treatmentUrgencyChart.getData().clear();
+            
+            // Make sure the chart is visible
+            treatmentUrgencyChart.setAnimated(false);
+            treatmentUrgencyChart.setLegendVisible(true);
+            
             XYChart.Series<String, Number> urgencySeries = new XYChart.Series<>();
             urgencySeries.setName("Treatment Requests");
             
-            // Use placeholder data instead of actual treatment data
+            // Use placeholder data with clear labels
             urgencySeries.getData().add(new XYChart.Data<>("Low", 12));
             urgencySeries.getData().add(new XYChart.Data<>("Medium", 8));
             urgencySeries.getData().add(new XYChart.Data<>("High", 5));
@@ -507,42 +539,42 @@ public class AdminDashboardController implements Initializable {
             
             treatmentUrgencyChart.getData().add(urgencySeries);
             
-            // Apply consistent colors to the chart
-            ChartUtils.styleUrgencyChart(urgencySeries);
-            
-            // Also apply CSS styling directly to the chart
-            treatmentUrgencyChart.getStylesheets().add(getClass().getResource("/com/hospital/chart-styles.css").toExternalForm());
-            
-            // Add style classes and tooltips to the bars
-            for (XYChart.Data<String, Number> data : urgencySeries.getData()) {
-                String urgencyLevel = data.getXValue();
+            // Apply consistent colors and show data values directly
+            Platform.runLater(() -> {
+                // Apply colors to the bars
+                String[] colors = {"#66cc66", "#ffcc00", "#ff9900", "#ff3333"};
+                int i = 0;
                 
-                // Set up listener for when the node is created
-                data.nodeProperty().addListener((obs, oldNode, newNode) -> {
-                    if (newNode != null) {
-                        // Apply specific style class
-                        switch (urgencyLevel) {
-                            case "Emergency":
-                                newNode.getStyleClass().add("emergency-bar");
-                                break;
-                            case "High":
-                                newNode.getStyleClass().add("high-bar");
-                                break;
-                            case "Medium":
-                                newNode.getStyleClass().add("medium-bar");
-                                break;
-                            case "Low":
-                                newNode.getStyleClass().add("low-bar");
-                                break;
-                            default:
-                                break;
+                for (XYChart.Data<String, Number> data : urgencySeries.getData()) {
+                    final int index = i++;
+                    final String color = colors[index % colors.length];
+                    final Number value = data.getYValue();
+                    
+                    // Create a label for the data value with larger font size
+                    Label dataLabel = new Label(value.toString());
+                    dataLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-background-color: white; -fx-padding: 2px 6px; -fx-background-radius: 3px;");
+                    
+                    // Set up listener for when the node is created
+                    data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                        if (newNode != null) {
+                            // Apply color directly
+                            newNode.setStyle("-fx-bar-fill: " + color + ";");
+                            
+                            // Position the label above the bar
+                            StackPane pane = (StackPane) newNode.getParent();
+                            if (pane != null) {
+                                pane.getChildren().add(dataLabel);
+                                StackPane.setAlignment(dataLabel, Pos.TOP_CENTER);
+                                StackPane.setMargin(dataLabel, new Insets(0, 0, 5, 0));
+                            }
+                            
+                            // Add tooltip
+                            Tooltip tooltip = new Tooltip(data.getXValue() + ": " + value);
+                            Tooltip.install(newNode, tooltip);
                         }
-                        
-                        // Add tooltip
-                        Tooltip.install(newNode, new Tooltip(urgencyLevel + ": " + data.getYValue()));
-                    }
-                });
-            }
+                    });
+                }
+            });
             
             // Load activity log with placeholder data
             if (activityLogList != null) {

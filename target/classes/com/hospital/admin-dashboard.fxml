@@ -125,6 +125,7 @@
                                     </HBox>
                                 </VBox>
                                 
+                                <!-- Treatment Requests by Urgency Chart -->
                                 <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
                                     <Label text="Treatment Requests by Urgency" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
                                         <font>
@@ -132,12 +133,12 @@
                                         </font>
                                     </Label>
                                     <Separator style="-fx-opacity: 0.3;" />
-                                    <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" VBox.vgrow="ALWAYS">
+                                    <BarChart fx:id="treatmentUrgencyChart" legendVisible="true" animated="false" barGap="4" categoryGap="10" VBox.vgrow="ALWAYS">
                                         <xAxis>
-                                            <CategoryAxis label="Urgency Level" />
+                                            <CategoryAxis label="Urgency Level" tickLabelRotation="0" animated="false" />
                                         </xAxis>
                                         <yAxis>
-                                            <NumberAxis label="Number of Requests" />
+                                            <NumberAxis label="Number of Requests" tickLabelGap="5" animated="false" />
                                         </yAxis>
                                     </BarChart>
                                 </VBox>
@@ -145,16 +146,6 @@
 
                             <!-- Additional dashboard content -->
                             <HBox spacing="20" VBox.vgrow="ALWAYS">
-                                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
-                                    <Label text="Hospitals by Region" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
-                                        <font>
-                                            <Font name="System Bold" size="16" />
-                                        </font>
-                                    </Label>
-                                    <Separator style="-fx-opacity: 0.3;" />
-                                    <PieChart fx:id="hospitalRegionChart" legendVisible="true" labelsVisible="true" VBox.vgrow="ALWAYS" />
-                                </VBox>
-                                
                                 <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" HBox.hgrow="ALWAYS">
                                     <Label text="System Activity" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;">
                                         <font>

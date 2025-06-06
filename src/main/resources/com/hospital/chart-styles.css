@@ -17,13 +17,28 @@
     -fx-bar-fill: #66cc66; /* Green */
 }
 
-/* Override default chart colors */
+/* Gender chart colors - match exactly with the sidebar */
+.chart-pie-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.chart-pie-label-line {
+    -fx-stroke: #666666;
+    -fx-fill: #666666;
+}
+
+/* Make data values visible on bars */
 .chart-bar {
     -fx-background-insets: 0, 1, 2;
     -fx-background-radius: 5 5 0 0, 4 4 0 0, 3 3 0 0;
+    -fx-bar-fill: #999999;
 }
 
-.default-color0.chart-bar { -fx-bar-fill: #999999; }
+/* Override default chart colors */
+.default-color0.chart-pie { -fx-pie-color: #4CAF50; } /* Male - Green */
+.default-color1.chart-pie { -fx-pie-color: #2196F3; } /* Female - Blue */
+.default-color2.chart-pie { -fx-pie-color: #FF9800; } /* Other - Orange */
 
 /* Add some styling to make charts look better */
 .chart-plot-background {
@@ -43,9 +58,24 @@
     -fx-padding: 10px;
 }
 
-/* Ensure bars have consistent width */
+/* Bar chart specific styling */
 .chart-bar {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
-    -fx-bar-fill: #999999;
+}
+
+/* Make bar chart data labels visible */
+.chart-bar-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+/* Ensure tooltip visibility */
+.tooltip {
+    -fx-background-color: rgba(30, 30, 30, 0.95);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
 } 
