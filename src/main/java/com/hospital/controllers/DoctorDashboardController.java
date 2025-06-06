@@ -141,9 +141,19 @@ public class DoctorDashboardController implements Initializable {
     }
     
     private void loadAssignedTreatments() throws SQLException {
-        // Get treatments for the current doctor and hospital
-        List<TreatmentRequest> doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
-            currentDoctor.getId(), currentDoctor.getHospitalId());
+        List<TreatmentRequest> doctorTreatments;
+        
+        if (currentDoctor.getHospitalId() > 0) {
+            // Get treatments for the current doctor and hospital
+            doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
+                currentDoctor.getId(), currentDoctor.getHospitalId());
+        } else {
+            // Fallback to get all treatments assigned to this doctor
+            List<TreatmentRequest> allTreatments = dbManager.getAllTreatmentRequests();
+            doctorTreatments = allTreatments.stream()
+                .filter(t -> t.getAssignedDoctorId() == currentDoctor.getId())
+                .collect(Collectors.toList());
+        }
         
         treatmentRequestsList.clear();
         treatmentRequestsList.addAll(doctorTreatments);
@@ -220,9 +230,19 @@ public class DoctorDashboardController implements Initializable {
             if ("All".equals(selectedStatus)) {
                 loadAssignedTreatments();
             } else {
-                // Get all treatments for this doctor and hospital
-                List<TreatmentRequest> doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
-                    currentDoctor.getId(), currentDoctor.getHospitalId());
+                List<TreatmentRequest> doctorTreatments;
+                
+                if (currentDoctor.getHospitalId() > 0) {
+                    // Get all treatments for this doctor and hospital
+                    doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
+                        currentDoctor.getId(), currentDoctor.getHospitalId());
+                } else {
+                    // Fallback to get all treatments assigned to this doctor
+                    List<TreatmentRequest> allTreatments = dbManager.getAllTreatmentRequests();
+                    doctorTreatments = allTreatments.stream()
+                        .filter(t -> t.getAssignedDoctorId() == currentDoctor.getId())
+                        .collect(Collectors.toList());
+                }
                 
                 // Filter by status
                 List<TreatmentRequest> filteredTreatments = doctorTreatments.stream()

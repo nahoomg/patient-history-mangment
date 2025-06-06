@@ -392,7 +392,7 @@ public class DatabaseManager {
     }
 
     public void updateDoctor(Doctor doctor) throws SQLException {
-        String sql = "UPDATE doctors SET firstName = ?, lastName = ?, specialization = ?, contactNumber = ?, email = ?, username = ?, password = ? WHERE id = ?";
+        String sql = "UPDATE doctors SET firstName = ?, lastName = ?, specialization = ?, contactNumber = ?, email = ?, username = ?, password = ?, hospital_id = ? WHERE id = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, doctor.getFirstName());
@@ -402,7 +402,8 @@ public class DatabaseManager {
             pstmt.setString(5, doctor.getEmail());
             pstmt.setString(6, doctor.getUsername());
             pstmt.setString(7, doctor.getPassword());
-            pstmt.setInt(8, doctor.getId());
+            pstmt.setInt(8, doctor.getHospitalId());
+            pstmt.setInt(9, doctor.getId());
             pstmt.executeUpdate();
         }
     }
@@ -424,6 +425,17 @@ public class DatabaseManager {
                 deleteStmt.setInt(1, doctorId);
                 deleteStmt.executeUpdate();
             }
+        }
+    }
+
+    public void updateDoctorHospital(int doctorId, int hospitalId) throws SQLException {
+        String sql = "UPDATE doctors SET hospital_id = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, hospitalId);
+            pstmt.setInt(2, doctorId);
+            pstmt.executeUpdate();
+            System.out.println("Updated doctor ID " + doctorId + " with hospital ID " + hospitalId);
         }
     }
 
@@ -752,6 +764,17 @@ public class DatabaseManager {
     }
     
     public void updateTreatmentRequest(TreatmentRequest request) throws SQLException {
+        // First, get the current hospital_id if it's not provided
+        if (request.getHospitalId() <= 0) {
+            TreatmentRequest existingRequest = getTreatmentRequestById(request.getId());
+            if (existingRequest != null && existingRequest.getHospitalId() > 0) {
+                request.setHospitalId(existingRequest.getHospitalId());
+                System.out.println("Using existing hospital ID: " + request.getHospitalId() + " for treatment request: " + request.getId());
+            } else {
+                throw new SQLException("Hospital ID is required for treatment requests");
+            }
+        }
+        
         String sql = "UPDATE treatment_requests SET status = ?, assigned_doctor_id = ?, hospital_id = ? WHERE id = ?";
         
         System.out.println("Updating treatment request: " + request.getId() + " with hospital ID: " + request.getHospitalId());
@@ -766,12 +789,7 @@ public class DatabaseManager {
                 pstmt.setNull(2, java.sql.Types.INTEGER);
             }
             
-            if (request.getHospitalId() > 0) {
-                pstmt.setInt(3, request.getHospitalId());
-            } else {
-                throw new SQLException("Hospital ID is required for treatment requests");
-            }
-            
+            pstmt.setInt(3, request.getHospitalId());
             pstmt.setInt(4, request.getId());
             
             pstmt.executeUpdate();

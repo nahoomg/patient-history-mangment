@@ -197,6 +197,12 @@
                         </GridPane>
                         
                         <HBox spacing="10" alignment="CENTER_RIGHT">
+                            <Button text="View/Edit Medical History" onAction="#handleViewMedicalHistory" 
+                                    style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
+                                <font>
+                                    <Font name="System Bold" size="12" />
+                                </font>
+                            </Button>
                             <Button text="Update Treatment" onAction="#handleUpdateTreatment" 
                                     style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 10 20;">
                                 <font>
