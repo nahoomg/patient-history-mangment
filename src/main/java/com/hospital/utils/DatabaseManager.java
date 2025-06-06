@@ -250,6 +250,15 @@ public class DatabaseManager {
         return admins;
     }
 
+    public void deleteAdmin(int adminId) throws SQLException {
+        String sql = "DELETE FROM admins WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, adminId);
+            pstmt.executeUpdate();
+        }
+    }
+
     // Doctor operations
     public void addDoctor(Doctor doctor) throws SQLException {
         String sql = "INSERT INTO doctors (firstName, lastName, specialization, contactNumber, email, username, password, hospital_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

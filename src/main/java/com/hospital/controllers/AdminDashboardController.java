@@ -179,7 +179,86 @@ public class AdminDashboardController implements Initializable {
         adminEmailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
         adminUsernameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUsername()));
         
+        // Set initial column constraints
+        adminIdColumn.setMinWidth(40);
+        adminFullNameColumn.setMinWidth(100);
+        adminEmailColumn.setMinWidth(150);
+        adminUsernameColumn.setMinWidth(80);
+        
         adminsTable.setItems(adminsList);
+        
+        // Set column resize policy for better fit
+        adminsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Add listener for when the table width changes (window resize)
+        adminsTable.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() > 0) {
+                adjustAdminTableColumns();
+            }
+        });
+        
+        // Add listener for when the scene is shown (to adjust columns after rendering)
+        adminsTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(this::adjustAdminTableColumns);
+                
+                // Also listen for window resize events
+                newScene.windowProperty().addListener((winObs, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.widthProperty().addListener((widthObs, oldWidth, newWidth) -> {
+                            Platform.runLater(this::adjustAdminTableColumns);
+                        });
+                    }
+                });
+            }
+        });
+    }
+    
+    /**
+     * Adjusts the admin table columns to fit the screen properly
+     */
+    private void adjustAdminTableColumns() {
+        // Set column resize policy
+        adminsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Force the table to layout and update its width
+        adminsTable.applyCss();
+        adminsTable.layout();
+        
+        // Get the actual width of the table's content area
+        double tableWidth = adminsTable.getWidth();
+        if (tableWidth <= 0) {
+            // If width is not yet available, use the scene width as a fallback
+            if (adminsTable.getScene() != null) {
+                tableWidth = adminsTable.getScene().getWidth() - 60; // Subtract padding
+            } else {
+                tableWidth = 800; // Default fallback width
+            }
+        }
+        
+        // Clear any previous constraints
+        adminIdColumn.setMinWidth(40);
+        adminFullNameColumn.setMinWidth(100);
+        adminEmailColumn.setMinWidth(150);
+        adminUsernameColumn.setMinWidth(80);
+        
+        // Set proportional widths
+        double totalWidth = tableWidth - 20; // Account for scrollbar and padding
+        
+        // ID column should be small
+        adminIdColumn.setPrefWidth(totalWidth * 0.08); // 8%
+        
+        // Name column needs more space
+        adminFullNameColumn.setPrefWidth(totalWidth * 0.30); // 30%
+        
+        // Email needs the most space
+        adminEmailColumn.setPrefWidth(totalWidth * 0.42); // 42%
+        
+        // Username gets the remaining space
+        adminUsernameColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Force the table to refresh
+        adminsTable.refresh();
     }
     
     private void initializePatientManagement() {
@@ -426,6 +505,14 @@ public class AdminDashboardController implements Initializable {
     private void loadAdmins() throws SQLException {
         adminsList.clear();
         adminsList.addAll(dbManager.getAllAdmins());
+        
+        // Ensure the table is properly set with the items
+        adminsTable.setItems(null); // Clear the table first
+        adminsTable.layout(); // Force layout refresh
+        adminsTable.setItems(adminsList); // Set the items again
+        
+        // Adjust columns to fit screen
+        Platform.runLater(this::adjustAdminTableColumns);
     }
     
     private void loadPatients() throws SQLException {
@@ -1045,5 +1132,69 @@ public class AdminDashboardController implements Initializable {
         medicalHistoryTextArea.setText(patient.getMedicalHistory() != null ? patient.getMedicalHistory() : "");
         
         patientDetailsPane.setVisible(true);
+    }
+    
+    @FXML
+    private void handleDeleteAdmin() {
+        Admin selectedAdmin = adminsTable.getSelectionModel().getSelectedItem();
+        if (selectedAdmin == null) {
+            showAlert("Please select an admin to delete");
+            return;
+        }
+        
+        // Prevent deleting the current admin
+        if (selectedAdmin.getId() == currentAdmin.getId()) {
+            showAlert("You cannot delete your own account while logged in");
+            return;
+        }
+        
+        // Confirm deletion
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Deletion");
+        confirmAlert.setHeaderText("Delete Admin");
+        confirmAlert.setContentText("Are you sure you want to delete the admin: " + 
+                                    selectedAdmin.getFullName() + 
+                                    "?\n\nThis action cannot be undone.");
+        
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                dbManager.deleteAdmin(selectedAdmin.getId());
+                
+                // Add to activity log
+                activityLogList.add(0, new ActivityLog(
+                    formatCurrentTime(),
+                    "Delete",
+                    "Admin deleted: " + selectedAdmin.getFullName()
+                ));
+                
+                showAlert("Admin deleted successfully");
+                loadAdmins();
+            } catch (SQLException e) {
+                showAlert("Error deleting admin: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    @FXML
+    private void handleRefreshAdmins() {
+        try {
+            // Clear the table first
+            adminsList.clear();
+            adminsTable.setItems(null);
+            adminsTable.layout();
+            
+            // Load admins from database
+            loadAdmins();
+            
+            // Force refresh of the UI
+            adminsTable.refresh();
+            
+            showAlert("Admin list refreshed successfully");
+        } catch (SQLException e) {
+            showAlert("Error refreshing admins: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 } 

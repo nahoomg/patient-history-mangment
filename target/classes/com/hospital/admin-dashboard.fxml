@@ -192,6 +192,12 @@
                     <VBox spacing="5" VBox.vgrow="ALWAYS">
                         <HBox alignment="CENTER_RIGHT" spacing="10">
                             <Label fx:id="patientStatusLabel" text="Patient list loaded successfully" style="-fx-text-fill: #2C3E50; -fx-font-style: italic;" HBox.hgrow="ALWAYS" />
+                            <Button text="Delete Selected" onAction="#handleDeletePatient"
+                                   style="-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10;">
+                                <font>
+                                    <Font size="10" />
+                                </font>
+                            </Button>
                             <Button text="Refresh Table" onAction="#handleRefreshPatients"
                                    style="-fx-background-color: #3498DB; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10;">
                                 <font>
@@ -297,8 +303,6 @@
                 </VBox>
             </Tab>
             
-            
-            
             <!-- Admin Management Tab -->
             <Tab text="Admin Management">
                 <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 20;" spacing="20">
@@ -318,28 +322,55 @@
                                         <Font size="12" />
                                     </font>
                                 </Button>
+                                <Button text="Refresh" onAction="#handleRefreshAdmins" 
+                                        style="-fx-background-color: #3498DB; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 15;">
+                                    <font>
+                                        <Font size="12" />
+                                    </font>
+                                </Button>
                                 <Region HBox.hgrow="ALWAYS" />
                             </HBox>
                         </VBox>
                     </HBox>
                     
                     <!-- Admins Table -->
-                    <TableView fx:id="adminsTable" VBox.vgrow="ALWAYS"
-                              style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
-                        <columns>
-                            <TableColumn fx:id="adminIdColumn" text="ID" prefWidth="50"/>
-                            <TableColumn fx:id="adminFullNameColumn" text="Full Name" prefWidth="200"/>
-                            <TableColumn fx:id="adminEmailColumn" text="Email" prefWidth="250"/>
-                            <TableColumn fx:id="adminUsernameColumn" text="Username" prefWidth="150"/>
-                        </columns>
+                    <VBox spacing="5" VBox.vgrow="ALWAYS">
+                        <HBox alignment="CENTER_RIGHT" spacing="10">
+                            <Label text="Admin list" style="-fx-text-fill: #2C3E50; -fx-font-style: italic;" HBox.hgrow="ALWAYS" />
+                            <Button text="Delete Selected Admin" onAction="#handleDeleteAdmin"
+                                   style="-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10;">
+                                <font>
+                                    <Font size="10" />
+                                </font>
+                            </Button>
+                        </HBox>
+                        <AnchorPane VBox.vgrow="ALWAYS" minHeight="400">
+                            <TableView fx:id="adminsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" 
+                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
+                                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                                <columns>
+                                    <TableColumn fx:id="adminIdColumn" text="ID" prefWidth="50"/>
+                                    <TableColumn fx:id="adminFullNameColumn" text="Full Name" prefWidth="200"/>
+                                    <TableColumn fx:id="adminEmailColumn" text="Email" prefWidth="250"/>
+                                    <TableColumn fx:id="adminUsernameColumn" text="Username" prefWidth="150"/>
+                                </columns>
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                </columnResizePolicy>
+                                <padding>
+                                    <Insets top="5" right="5" bottom="5" left="5" />
+                                </padding>
+                            </TableView>
+                            <VBox.margin>
+                                <Insets top="5" />
+                            </VBox.margin>
+                        </AnchorPane>
                         <VBox.margin>
                             <Insets top="20" />
                         </VBox.margin>
-                    </TableView>
+                    </VBox>
                 </VBox>
             </Tab>
-            
-            
             
             <!-- Hospital Management Tab -->
             <Tab text="Hospital Management">
@@ -384,6 +415,12 @@
                     <VBox spacing="5" VBox.vgrow="ALWAYS">
                         <HBox alignment="CENTER_RIGHT" spacing="10">
                             <Label fx:id="hospitalStatusLabel" text="Hospital list loaded successfully" style="-fx-text-fill: #2C3E50; -fx-font-style: italic;" HBox.hgrow="ALWAYS" />
+                            <Button text="Delete Selected" onAction="#handleDeleteHospital"
+                                   style="-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10;">
+                                <font>
+                                    <Font size="10" />
+                                </font>
+                            </Button>
                             <Button text="Refresh Table" onAction="#handleRefreshHospitals"
                                    style="-fx-background-color: #3498DB; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 10;">
                                 <font>
