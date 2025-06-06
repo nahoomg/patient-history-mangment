@@ -41,6 +41,10 @@ public class AdminDashboardController implements Initializable {
     @FXML private Label pendingTreatmentsLabel;
     @FXML private PieChart genderDistributionChart;
     @FXML private BarChart<String, Number> treatmentUrgencyChart;
+    @FXML private Label maleCountLabel;
+    @FXML private Label femaleCountLabel;
+    @FXML private Label otherCountLabel;
+    @FXML private Label totalGenderCountLabel;
     
     // Treatment request elements
     // @FXML private ComboBox<String> urgencyFilterComboBox;
@@ -406,8 +410,72 @@ public class AdminDashboardController implements Initializable {
             // Load gender distribution chart
             genderDistributionChart.getData().clear();
             Map<String, Integer> genderDistribution = dbManager.getPatientGenderDistribution();
+            
+            // Initialize counters
+            int maleCount = 0;
+            int femaleCount = 0;
+            int otherCount = 0;
+            int totalCount = 0;
+            
+            // Process gender distribution data
             for (Map.Entry<String, Integer> entry : genderDistribution.entrySet()) {
-                genderDistributionChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+                String gender = entry.getKey();
+                int count = entry.getValue();
+                
+                // Add to pie chart
+                PieChart.Data pieData = new PieChart.Data(gender, count);
+                genderDistributionChart.getData().add(pieData);
+                
+                // Update counters
+                if ("Male".equalsIgnoreCase(gender)) {
+                    maleCount = count;
+                } else if ("Female".equalsIgnoreCase(gender)) {
+                    femaleCount = count;
+                } else {
+                    otherCount += count;
+                }
+                
+                totalCount += count;
+            }
+            
+            // Update labels with counts
+            if (maleCountLabel != null) maleCountLabel.setText(String.valueOf(maleCount));
+            if (femaleCountLabel != null) femaleCountLabel.setText(String.valueOf(femaleCount));
+            if (otherCountLabel != null) otherCountLabel.setText(String.valueOf(otherCount));
+            if (totalGenderCountLabel != null) totalGenderCountLabel.setText(String.valueOf(totalCount));
+            
+            // Store final value for use in lambda expressions
+            final int finalTotalCount = totalCount;
+            
+            // Apply colors to pie chart slices and add tooltips
+            int colorIndex = 0;
+            String[] colors = {"#4CAF50", "#2196F3", "#FF9800"};
+            for (PieChart.Data data : genderDistributionChart.getData()) {
+                // Apply color
+                if (colorIndex < colors.length) {
+                    final int index = colorIndex++;
+                    
+                    // We need to use a listener because the node is created later
+                    data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                        if (newNode != null) {
+                            // Apply color
+                            newNode.setStyle("-fx-pie-color: " + colors[index] + ";");
+                            
+                            // Add tooltip with count and percentage
+                            final String gender = data.getName();
+                            final int count = (int) data.getPieValue();
+                            final double percentage = (finalTotalCount > 0) ? (count * 100.0 / finalTotalCount) : 0;
+                            
+                            // Create tooltip with formatted percentage
+                            Tooltip tooltip = new Tooltip(
+                                String.format("%s: %d (%.1f%%)", gender, count, percentage)
+                            );
+                            
+                            // Install tooltip
+                            Tooltip.install(newNode, tooltip);
+                        }
+                    });
+                }
             }
             
             // Load hospital region chart if available
