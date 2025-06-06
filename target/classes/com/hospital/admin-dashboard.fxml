@@ -362,8 +362,9 @@
                                 </font>
                             </Button>
                         </HBox>
-                        <StackPane VBox.vgrow="ALWAYS">
-                            <TableView fx:id="hospitalsTable" VBox.vgrow="ALWAYS" maxHeight="Infinity" maxWidth="Infinity"
+                        <AnchorPane VBox.vgrow="ALWAYS">
+                            <TableView fx:id="hospitalsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" 
+                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
                                       style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
                                 <columns>
                                     <TableColumn fx:id="hospitalIdColumn" text="ID" prefWidth="50" minWidth="40"/>
@@ -383,7 +384,7 @@
                             <VBox.margin>
                                 <Insets top="5" />
                             </VBox.margin>
-                        </StackPane>
+                        </AnchorPane>
                     </VBox>
                     
                     <!-- Hospital Details -->

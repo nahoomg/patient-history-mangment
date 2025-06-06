@@ -98,9 +98,30 @@ public class LoginController {
     private void loginAsDoctor(String username, String password) throws SQLException {
         Doctor doctor = dbManager.authenticateDoctor(username, password);
         if (doctor != null) {
-            Session.getInstance().setCurrentUser(doctor);
-            Session.getInstance().setUserType("doctor");
-            navigateToDashboard("/com/hospital/doctor-dashboard.fxml", "Doctor Dashboard");
+            try {
+                // Store in session
+                Session.getInstance().setCurrentUser(doctor);
+                Session.getInstance().setUserType("doctor");
+                
+                // Load the dashboard with doctor data
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hospital/doctor-dashboard.fxml"));
+                Parent root = loader.load();
+                
+                // Get the controller and set the doctor
+                DoctorDashboardController controller = loader.getController();
+                controller.setDoctor(doctor);
+                
+                // Show the dashboard
+                Stage stage = (Stage) usernameField.getScene().getWindow();
+                Scene scene = new Scene(root, Main.DEFAULT_WIDTH, Main.DEFAULT_HEIGHT);
+                stage.setScene(scene);
+                stage.setTitle("Doctor Dashboard");
+                stage.setMaximized(Main.USE_MAXIMIZED);
+                stage.show();
+            } catch (IOException e) {
+                messageLabel.setText("Error loading dashboard: " + e.getMessage());
+                e.printStackTrace();
+            }
         } else {
             messageLabel.setText("Invalid doctor credentials");
         }

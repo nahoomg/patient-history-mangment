@@ -22,6 +22,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -214,6 +215,14 @@ public class AdminDashboardController implements Initializable {
         hospitalEmailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
         hospitalUsernameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getUsername()));
         
+        // Set initial column constraints
+        hospitalIdColumn.setMinWidth(40);
+        hospitalNameColumn.setMinWidth(100);
+        hospitalAddressColumn.setMinWidth(150);
+        hospitalContactColumn.setMinWidth(80);
+        hospitalEmailColumn.setMinWidth(100);
+        hospitalUsernameColumn.setMinWidth(80);
+        
         hospitalsTable.setItems(hospitalsList);
         
         // Add selection listener for hospital details
@@ -232,6 +241,22 @@ public class AdminDashboardController implements Initializable {
         hospitalsTable.widthProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() > 0) {
                 adjustHospitalTableColumns();
+            }
+        });
+        
+        // Add listener for when the scene is shown (to adjust columns after rendering)
+        hospitalsTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(this::adjustHospitalTableColumns);
+                
+                // Also listen for window resize events
+                newScene.windowProperty().addListener((winObs, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.widthProperty().addListener((widthObs, oldWidth, newWidth) -> {
+                            Platform.runLater(this::adjustHospitalTableColumns);
+                        });
+                    }
+                });
             }
         });
         
@@ -364,7 +389,19 @@ public class AdminDashboardController implements Initializable {
         
         // Adjust columns to fit screen
         // We need to wait for JavaFX to render the table before adjusting columns
-        javafx.application.Platform.runLater(this::adjustHospitalTableColumns);
+        Platform.runLater(() -> {
+            adjustHospitalTableColumns();
+            
+            // Force another adjustment after a short delay to ensure proper sizing
+            new Thread(() -> {
+                try {
+                    Thread.sleep(200);
+                    Platform.runLater(this::adjustHospitalTableColumns);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        });
     }
     
     private void createSampleHospital() {
@@ -735,32 +772,51 @@ public class AdminDashboardController implements Initializable {
         // Set column resize policy
         hospitalsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
-        // Set relative column widths based on content importance
+        // Force the table to layout and update its width
+        hospitalsTable.applyCss();
+        hospitalsTable.layout();
+        
+        // Get the actual width of the table's content area
         double tableWidth = hospitalsTable.getWidth();
-        if (tableWidth > 0) {
-            // ID column should be small
-            hospitalIdColumn.setMaxWidth(tableWidth * 0.07); // 7%
-            hospitalIdColumn.setPrefWidth(tableWidth * 0.07);
-            
-            // Name is important, give it more space
-            hospitalNameColumn.setMaxWidth(tableWidth * 0.20); // 20%
-            hospitalNameColumn.setPrefWidth(tableWidth * 0.20);
-            
-            // Address needs the most space
-            hospitalAddressColumn.setMaxWidth(tableWidth * 0.30); // 30%
-            hospitalAddressColumn.setPrefWidth(tableWidth * 0.30);
-            
-            // Contact and email get moderate space
-            hospitalContactColumn.setMaxWidth(tableWidth * 0.15); // 15%
-            hospitalContactColumn.setPrefWidth(tableWidth * 0.15);
-            
-            hospitalEmailColumn.setMaxWidth(tableWidth * 0.18); // 18%
-            hospitalEmailColumn.setPrefWidth(tableWidth * 0.18);
-            
-            // Username gets the remaining space
-            hospitalUsernameColumn.setMaxWidth(tableWidth * 0.10); // 10%
-            hospitalUsernameColumn.setPrefWidth(tableWidth * 0.10);
+        if (tableWidth <= 0) {
+            // If width is not yet available, use the scene width as a fallback
+            if (hospitalsTable.getScene() != null) {
+                tableWidth = hospitalsTable.getScene().getWidth() - 60; // Subtract padding
+            } else {
+                tableWidth = 800; // Default fallback width
+            }
         }
+        
+        // Clear any previous constraints
+        hospitalIdColumn.setMinWidth(40);
+        hospitalNameColumn.setMinWidth(100);
+        hospitalAddressColumn.setMinWidth(150);
+        hospitalContactColumn.setMinWidth(80);
+        hospitalEmailColumn.setMinWidth(100);
+        hospitalUsernameColumn.setMinWidth(80);
+        
+        // Set proportional widths
+        double totalWidth = tableWidth - 20; // Account for scrollbar and padding
+        
+        // ID column should be small
+        hospitalIdColumn.setPrefWidth(totalWidth * 0.06); // 6%
+        
+        // Name is important, give it more space
+        hospitalNameColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Address needs the most space
+        hospitalAddressColumn.setPrefWidth(totalWidth * 0.30); // 30%
+        
+        // Contact and email get moderate space
+        hospitalContactColumn.setPrefWidth(totalWidth * 0.14); // 14%
+        
+        hospitalEmailColumn.setPrefWidth(totalWidth * 0.20); // 20%
+        
+        // Username gets the remaining space
+        hospitalUsernameColumn.setPrefWidth(totalWidth * 0.10); // 10%
+        
+        // Force the table to refresh
+        hospitalsTable.refresh();
     }
     
     private String formatCurrentTime() {
