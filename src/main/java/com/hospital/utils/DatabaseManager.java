@@ -1310,4 +1310,64 @@ public class DatabaseManager {
         System.out.println("Total patients found for hospital " + hospitalId + ": " + patients.size());
         return patients;
     }
+
+    public List<TreatmentRequest> getTreatmentRequestsByDoctorAndHospital(int doctorId, int hospitalId) throws SQLException {
+        List<TreatmentRequest> requests = new ArrayList<>();
+        String sql = """
+            SELECT tr.*, 
+                   p.firstName || ' ' || p.lastName AS patient_name,
+                   d.firstName || ' ' || d.lastName AS doctor_name,
+                   h.name AS hospital_name
+            FROM treatment_requests tr
+            JOIN patients p ON tr.patient_id = p.id
+            LEFT JOIN doctors d ON tr.assigned_doctor_id = d.id
+            LEFT JOIN hospitals h ON tr.hospital_id = h.id
+            WHERE tr.assigned_doctor_id = ? AND tr.hospital_id = ?
+            ORDER BY 
+                CASE 
+                    WHEN tr.urgency = 'Emergency' THEN 1
+                    WHEN tr.urgency = 'High' THEN 2
+                    WHEN tr.urgency = 'Medium' THEN 3
+                    WHEN tr.urgency = 'Low' THEN 4
+                    ELSE 5
+                END,
+                tr.date_requested DESC
+        """;
+        
+        System.out.println("Fetching treatment requests for doctor ID: " + doctorId + " and hospital ID: " + hospitalId);
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, doctorId);
+            pstmt.setInt(2, hospitalId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                try {
+                    TreatmentRequest request = new TreatmentRequest(
+                        rs.getInt("id"),
+                        rs.getInt("patient_id"),
+                        rs.getString("patient_name"),
+                        LocalDate.parse(rs.getString("date_requested")),
+                        LocalDate.parse(rs.getString("preferred_date")),
+                        rs.getString("urgency"),
+                        rs.getString("symptoms"),
+                        rs.getString("status"),
+                        doctorId,
+                        rs.getString("doctor_name"),
+                        hospitalId,
+                        rs.getString("hospital_name")
+                    );
+                    requests.add(request);
+                    System.out.println("Found request: " + request.getId() + " for doctor: " + doctorId + " and hospital: " + hospitalId);
+                } catch (Exception e) {
+                    System.err.println("Error parsing treatment request: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        System.out.println("Total requests found for doctor " + doctorId + " and hospital " + hospitalId + ": " + requests.size());
+        return requests;
+    }
 } 

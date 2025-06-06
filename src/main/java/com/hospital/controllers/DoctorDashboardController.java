@@ -141,18 +141,16 @@ public class DoctorDashboardController implements Initializable {
     }
     
     private void loadAssignedTreatments() throws SQLException {
-        List<TreatmentRequest> allTreatments = dbManager.getAllTreatmentRequests();
-        
-        // Filter treatments assigned to the current doctor
-        List<TreatmentRequest> doctorTreatments = allTreatments.stream()
-            .filter(t -> t.getAssignedDoctorId() == currentDoctor.getId())
-            .collect(Collectors.toList());
+        // Get treatments for the current doctor and hospital
+        List<TreatmentRequest> doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
+            currentDoctor.getId(), currentDoctor.getHospitalId());
         
         treatmentRequestsList.clear();
         treatmentRequestsList.addAll(doctorTreatments);
         
         System.out.println("Loaded " + treatmentRequestsList.size() + " treatments for Dr. " + 
-                          currentDoctor.getFirstName() + " " + currentDoctor.getLastName());
+                          currentDoctor.getFirstName() + " " + currentDoctor.getLastName() + 
+                          " at hospital ID: " + currentDoctor.getHospitalId());
     }
     
     private void updateDashboardStatistics() {
@@ -222,11 +220,12 @@ public class DoctorDashboardController implements Initializable {
             if ("All".equals(selectedStatus)) {
                 loadAssignedTreatments();
             } else {
-                List<TreatmentRequest> allTreatments = dbManager.getAllTreatmentRequests();
+                // Get all treatments for this doctor and hospital
+                List<TreatmentRequest> doctorTreatments = dbManager.getTreatmentRequestsByDoctorAndHospital(
+                    currentDoctor.getId(), currentDoctor.getHospitalId());
                 
-                // Filter treatments by doctor and status
-                List<TreatmentRequest> filteredTreatments = allTreatments.stream()
-                    .filter(t -> t.getAssignedDoctorId() == currentDoctor.getId())
+                // Filter by status
+                List<TreatmentRequest> filteredTreatments = doctorTreatments.stream()
                     .filter(t -> selectedStatus.equals(t.getStatus()))
                     .collect(Collectors.toList());
                 
